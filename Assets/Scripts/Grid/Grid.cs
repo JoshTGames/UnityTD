@@ -17,7 +17,7 @@ namespace AstralCandle.GridSystem{
         /// <summary>
         /// Used to help find the center of a position
         /// </summary>
-        public static float HALF_CELL_SIZE{ get => (float)CELL_SIZE / 2; }
+        static float HALF_CELL_SIZE{ get => (float)CELL_SIZE / 2; }
 
         static int RoundToGrid(float x) => Mathf.RoundToInt(x / CELL_SIZE) * CELL_SIZE;
         static int FloorToGrid(float x) => Mathf.FloorToInt(x / CELL_SIZE) * CELL_SIZE;
@@ -41,5 +41,7 @@ namespace AstralCandle.GridSystem{
         /// <param name="value">The position you want to ceil to the grid</param>
         /// <returns>The ceiled position</returns>
         public static Vector3 CeilToGrid(Vector3 value) => new Vector3(CeilToGrid(value.x), CeilToGrid(value.y), CeilToGrid(value.z));
+
+        public static Vector3 CenterToCell(Vector3 value) => value + (Vector3.one * HALF_CELL_SIZE);
     }
 }
