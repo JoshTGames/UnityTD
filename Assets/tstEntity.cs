@@ -4,14 +4,11 @@ using UnityEngine;
 using AstralCandle.TowerDefence;
 
 public class tstEntity : CharacterEntity{
-    public override void OnHover(bool hovered){
-        transform.localScale = (hovered)? Vector3.one * 1.1f : Vector3.one;
+    [SerializeField] int thisHp = 100;
+    private void FixedUpdate() {
+        health = thisHp;
     }
-
-    public override void OnSelect(bool selected){
-        transform.GetChild(0).gameObject.SetActive(selected);
-    }
-
+    
     protected override ERR Attack(HealthEntity entity)
     {
         throw new System.NotImplementedException();
@@ -24,21 +21,17 @@ public class tstEntity : CharacterEntity{
 
     protected override void OnDamage()
     {
-        throw new System.NotImplementedException();
     }
 
     protected override void OnDeath()
     {
-        throw new System.NotImplementedException();
     }
 
     protected override void OnHeal()
     {
-        throw new System.NotImplementedException();
     }
 
     protected override void OnImmortalHit()
     {
-        throw new System.NotImplementedException();
     }
 }

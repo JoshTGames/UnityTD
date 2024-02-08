@@ -117,6 +117,11 @@ namespace AstralCandle.TowerDefence{
         }
 
         /// <summary>
+        /// Gets the health percentage of this entity 
+        /// </summary>
+        public float GetHealthPercentage() => Mathf.Clamp01((float)health / maxHealth);
+
+        /// <summary>
         /// Applies an infliction on the entity
         /// </summary>
         /// <param name="infliction">The infliction type that will be applied onto the entity</param>
