@@ -12,6 +12,8 @@ namespace AstralCandle.TowerDefence{
     /// The base entity class which provides basic functionality; allowing for 'OnHover' & 'OnSelect' interactivity
     /// </summary>
     public abstract class BaseEntity : MonoBehaviour, ISelectable{
+        [SerializeField] string entityName;
+        [SerializeField, TextArea] string entityDescription;
         [SerializeField, Tooltip("Identifies who owns this entity. -1 means it is not owned. By default '0' is the player")] int _ownerId = -1;
         [SerializeField, Tooltip("When selected, this will get instantiated")] protected SelectionCircle selectionObject;
         protected SelectionCircle instantiatedSelection{ // This will hold the actual selectionObject
@@ -28,7 +30,10 @@ namespace AstralCandle.TowerDefence{
         /// The behaviour that should occur when mouse is hovering over this entity
         /// </summary>
         /// <param name="hovered">Are we hovering over this entity?</param>
-        public virtual void OnHover(bool hovered) => transform.localScale = (hovered)? Vector3.one * 1.1f : Vector3.one;
+        public virtual void OnHover(bool hovered){
+            transform.localScale = (hovered)? Vector3.one * 1.1f : Vector3.one;
+            EntityTooltip.instance.tooltip = (hovered)? new EntityTooltip.Tooltip(entityName, entityDescription): null;
+        }
 
         /// <summary>
         /// The behaviour that should occur when this entity is selected
