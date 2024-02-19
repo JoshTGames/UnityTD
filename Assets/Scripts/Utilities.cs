@@ -111,12 +111,12 @@ public static class Utilities{
     }
     
     /// <summary>
-    /// When used inside a Sin/Cos function, will return an output used to create a circle
+    /// Useful inside Sin functions, calculates a given point on a circle
     /// </summary>
     /// <param name="index">The current point to be calculate in the circle</param>
     /// <param name="iterations">The max number of points to sum up the circle</param>
-    /// <returns>A value representing a point on the circumferance of a circle</returns>
-    public static float CalculateCircularVectorAngle(float index, int iterations) => index * 2 * Mathf.PI / iterations;
+    /// <returns>A radian angle</returns>
+    public static float CalculateRadianAngle(float index, int iterations) => index * 2 * Mathf.PI / iterations;
 
     /// <summary>
     /// Used to calculate the vector direction representing a point on a circumferance of a circle
@@ -126,7 +126,7 @@ public static class Utilities{
     /// <param name="axisToAffect">The axis to create the circle on (Should be either 0,1)</param>
     /// <returns>A vector representing a point on the circumferance of a circle</returns>
     public static Vector3 CalculateCircularVectorAngle(float index, int iterations, Vector3 axisToAffect){
-        float angle = CalculateCircularVectorAngle(index, iterations);
+        float angle = CalculateRadianAngle(index, iterations);
         return Vector3.Scale(new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), Mathf.Cos(angle)), axisToAffect);
     }
     
@@ -159,17 +159,6 @@ public static class Utilities{
             get;
             private set;
         }
-
-        public float magnitude{
-                get;
-                private set;
-            }
-
-            public float sqrMagnitude{
-                get;
-                private set;
-            }
-
         public Velocity(Vector3 position) => this.previousPosition = position;
         /// <summary>
         /// This function should be called from 'FixedUpdate' for accurate results
@@ -177,19 +166,9 @@ public static class Utilities{
         /// <param name="position">The current position</param>
         /// <returns>The velocity given the last position over time</returns>
         public Vector3 CalculateVelocity(Vector3 position){
-            Vector3 displacement = (position - previousPosition);      
-            value = displacement / Time.fixedDeltaTime;
-            magnitude = value.magnitude;
-            sqrMagnitude = value.sqrMagnitude;
+            value = (position - previousPosition) / Time.fixedDeltaTime;
             this.previousPosition = position;
             return value;
         }
-
-        /// <summary>
-        /// Calculates the time it would take to reach a distance given the displacement value and velocity
-        /// </summary>
-        /// <param name="displacement">The difference in distance between 2 positions</param>
-        /// <returns>The time it would take to reach a distance given the velocity</returns>
-        public float CalculateTime(float displacement) => displacement / magnitude;
     }
 }

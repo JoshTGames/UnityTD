@@ -10,5 +10,5 @@ public class CameraBobble : MonoBehaviour{
 
     void LateUpdate(){
         transform.position = cachedPosition + new Vector3(Mathf.Cos((Time.time * frequency) / 2) * amplitude, Mathf.Sin(Time.time * frequency) * amplitude);    
-    }
+    }    
 }

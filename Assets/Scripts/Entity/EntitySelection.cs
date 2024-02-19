@@ -6,7 +6,7 @@ using UnityEngine;
         --- Copyright ©️ 2024-2025 AstralCandle Games. All Rights Reserved. ---
 */
 
-namespace AstralCandle.TowerDefence{
+namespace AstralCandle.Entity{
     public class EntitySelection<TEntityObj>{   
         /// <summary>
         /// All the selectable entities in the scene 
@@ -31,15 +31,17 @@ namespace AstralCandle.TowerDefence{
         public ISelectable hovered{
             get => _hovered;
             set{
-                _hovered?.OnHover(false);
+                if(_hovered != null && !_hovered.IsDestroyed()){ _hovered.OnIsHovered(false); }
                 _hovered = value;
-                _hovered?.OnHover(true);
+                if(_hovered != null && !_hovered.IsDestroyed()){ _hovered.OnIsHovered(true); }
             }
         }
+        
         Camera cam;
-
-        public EntitySelection(Camera cam){
+        SelectionCircle selectionObject;
+        public EntitySelection(Camera cam, SelectionCircle selectionObject){
             this.cam = cam;
+            this.selectionObject = selectionObject;
         }
 
         
@@ -49,11 +51,11 @@ namespace AstralCandle.TowerDefence{
         /// </summary>
         /// <param name="entity">The entity we want to add to data set</param>
         public void ClickSelect(TEntityObj entity){
-            ISelectable selectable = (ISelectable)entity;
-            
             DeselectAll();
+            if(entity == null){ return; }
+            ISelectable selectable = entity as ISelectable;            
             selected.Add(entity);
-            selectable?.OnSelect(true);
+            selectable?.OnIsSelected(selectionObject);
         }
 
         /// <summary>
@@ -61,16 +63,17 @@ namespace AstralCandle.TowerDefence{
         /// </summary>
         /// <param name="entity">The entity we want to add or potentially remove from the data set</param>
         public void ShiftClickSelectEntity(TEntityObj entity){
+            if(entity == null){ return; }
             ISelectable selectable = (ISelectable)entity;
 
             switch(selected.Contains(entity)){
                 case true:
                     selected.Remove(entity);
-                    selectable?.OnSelect(false);
+                    selectable?.OnIsSelected();
                     break;
                 case false:
                     selected.Add(entity);
-                    selectable?.OnSelect(true);
+                    selectable?.OnIsSelected(selectionObject);
                     break;
             }
         }
@@ -85,11 +88,11 @@ namespace AstralCandle.TowerDefence{
 
             if(!alternateMode && !selected.Contains(entity)){ 
                 selected.Add(entity);                 
-                selectable?.OnSelect(true);
+                selectable?.OnIsSelected(selectionObject);
             }
             else if(alternateMode && selected.Contains(entity)){ 
                 selected.Remove(entity); 
-                selectable?.OnSelect(false);
+                selectable?.OnIsSelected();
             }
         }
 
@@ -99,7 +102,7 @@ namespace AstralCandle.TowerDefence{
         public void DeselectAll(){
             foreach(TEntityObj entity in selected){
                 ISelectable selectable = (ISelectable)entity; 
-                selectable?.OnSelect(false);                
+                selectable?.OnIsSelected();                
             }
             selected.Clear();
         }
@@ -113,7 +116,7 @@ namespace AstralCandle.TowerDefence{
 
             if(!selected.Contains(entity)){ return; } // Safe guard
             selected.Remove(entity);
-            selectable?.OnSelect(false);                
+            selectable?.OnIsSelected();                
         }
         #endregion
 
@@ -143,8 +146,9 @@ namespace AstralCandle.TowerDefence{
         /// <param name="layers">The layers our raycast call will check</param>
         /// <returns>The entity we hit</returns>   
         public TEntityObj PositionOverEntity(Vector3 screenPosition, LayerMask layers){
-            RaycastHit hit;
             Ray ray = cam.ScreenPointToRay(screenPosition);
+            RaycastHit hit;
+            
             // If nothing has been hit then return
             if(!Physics.Raycast(ray, out hit, cam.farClipPlane, layers)){ return default(TEntityObj); }
 
@@ -152,13 +156,5 @@ namespace AstralCandle.TowerDefence{
             return collectedEntity;
         }
 
-    }
-
-    /// <summary>
-    /// Used to show tool tips and descriptions of objects when mouse is hovering over objects
-    /// </summary>
-    public interface ISelectable{
-        public void OnHover(bool hovered);
-        public void OnSelect(bool selected);
     }
 }

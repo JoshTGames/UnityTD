@@ -622,7 +622,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &5828576437116565024
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -652,9 +652,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90729e021c797504b9e4bb32815fb200, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  entity: {fileID: 0}
+  _entity: {fileID: 0}
+  _collider: {fileID: 0}
+  offset: 0.1
   smoothing: 0.05
-  offset: {x: 0, y: -0.9, z: 0}
   spawnSettings:
     animation:
       serializedVersion: 2

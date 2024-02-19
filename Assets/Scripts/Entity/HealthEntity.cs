@@ -87,14 +87,10 @@ namespace AstralCandle.TowerDefence{
         /// <param name="infliction">The damage type that will be attempted to place on this entity</param>
         /// <returns>An Entity 'ERR' enum code</returns>
         public ERR Damage(int value, DamageType infliction = DamageType.BALLISTIC){
-            if(value != -Mathf.Abs(value)){ // Guard clause to stop healing in the damage function
-                Debug.LogWarning($"{this.GetType()}:: Value is attempting to heal entity inside the Damage function!");
-                return ERR.INVALID_CALL;
-            }
-
+            value = -Mathf.Abs(value); // Ensures the value is negative
             bool hasResistance = resistances.Contains(infliction);
             int damage = (hasResistance)? Mathf.FloorToInt(value / 3) * 2: value; // If we have resistance to this damage type, then perform 2/3 of the desired damage
-            health -= damage;
+            health += damage;
 
             if(!hasResistance){ ApplyInfliction(infliction);}
 
@@ -108,10 +104,8 @@ namespace AstralCandle.TowerDefence{
         /// <param name="value">The amount to heal this entity by</param>
         /// <returns>An Entity 'ERR' enum code</returns>
         public ERR Heal(int value){
-            if(value != Mathf.Abs(value)){ // Guard clause to stop damage in the heal function
-                Debug.LogWarning($"{this.GetType()}:: Value is attempting to inflict damage inside the Heal function!");
-                return ERR.INVALID_CALL;
-            }
+            value = Mathf.Abs(value); // Ensures the value is positive
+            
             health += value;
             return ERR.SUCCESS;
         }
@@ -130,7 +124,7 @@ namespace AstralCandle.TowerDefence{
 
             async void ApplyBleedOverDuration(){
                 while(elapsedTime < (int)infliction){
-                    health -= Mathf.FloorToInt(.05f * maxHealth); // 5% of health
+                    health -= Mathf.FloorToInt(.025f * maxHealth); // 5% of health
                     elapsedTime += 1;
                     await Task.Delay(1000);
                 }
@@ -155,20 +149,6 @@ namespace AstralCandle.TowerDefence{
             FIRE = 3,
             ELECTRIC = 2,
             BLEEDING = 5
-        }
-
-        /// <summary>
-        /// Codes useful for AI development
-        /// </summary>
-        public enum ERR{
-            SUCCESS = 0, // Successful call
-            INVALID_CALL = -1, // Invalid call (Perhaps wrong function)
-            IS_IMMORTAL = -2, // Entity is immortal (Useful for AI)
-            NOT_IN_RANGE = -3, // Not in range to target
-            NO_OCCUPANTS = -4, // No occupants associated to entity
-            MAX_OCCUPANTS = -5, // Entity has reached max occupancy
-            IS_FROZEN = -6, // Entity is stunned
-            UNABLE_TO_ATTACK = -7 // Entity is unable to attack (Perhaps cooldown)
-        }
+        }        
     }
 }
