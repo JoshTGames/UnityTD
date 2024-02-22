@@ -15,8 +15,8 @@ namespace AstralCandle.Entity{
     public abstract class EntityHealth : Entity, IHealth{
         [Header("Health Settings")]
         [SerializeField, Tooltip("If true, will stop this entity from being inflicted by damage")] bool immortal;
-        [SerializeField, Tooltip("Any resistances here will reduce incoming damage and stop the infliction being added")] List<IHealth.InflictionType> _resistances;
         [SerializeField, Tooltip("The max health this entity can have")] int maxHealth;
+        [SerializeField, Tooltip("Any resistances here will reduce incoming damage and stop the infliction being added")] List<IHealth.InflictionType> _resistances;
 
         /// <summary>
         /// The resistances this entity has. (This is the '_resistances' variable, converted into a hashset)

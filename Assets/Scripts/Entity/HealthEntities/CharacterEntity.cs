@@ -52,7 +52,6 @@ namespace AstralCandle.TowerDefence{
         /// </summary>
         [HideInInspector] public Vector3 moveDirection;
         Quaternion prvLookDirection;
-
         Vector3 lookDirection, lookVelocity;
         [SerializeField] float smoothing = 0.1f;
 
@@ -161,6 +160,7 @@ namespace AstralCandle.TowerDefence{
             ManageMovement();
             ManageLean();
         }
+        
         protected override void Start() {
             base.Start();
             targetPosition = transform.position;

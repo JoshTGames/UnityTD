@@ -70,12 +70,12 @@ namespace AstralCandle.Entity{
 
             if(health != null){
                 healthCircle.percent = health.GetHealth();
-                healthCircle.UpdateBar(true);
+                healthCircle.UpdateBar();
             }
 
             if(attack != null){
                 attackCircle.percent = 1 - attack.GetCooldown();
-                attackCircle.UpdateBar(true);
+                attackCircle.UpdateBar();
             }
         }
 

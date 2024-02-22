@@ -104,7 +104,7 @@ public class PlayerControls : MonoBehaviour{
 
             // Iterate through each of our selected characters and query the structure
             foreach(Entity e in entities.selected){
-                IMove entity = e as IMove;
+                ITask entity = e as ITask;
                 if(entity == null || e.OwnerId != ownerId){ continue; } // If not a character or is not owned by the player...
                 
                 switch(structure.AddOccupant(e)){
@@ -112,27 +112,27 @@ public class PlayerControls : MonoBehaviour{
                         Destroy(e.gameObject);
                         break;
                     case EntityERR.NOT_IN_RANGE:
-                        entity.Move(hoveredEntity.transform.position, () => structure.AddOccupant(e));
+                        entity.SetTask(hoveredEntity.transform.position, () => structure.AddOccupant(e));
                         break;
                 }
             }
         }                
-        else{ // Move to cursor
+        else{ // SetTask to cursor
             // Stops raycasts being calculated if nothing is selected
             if(entities.selected.Count <= 0){ return; }
 
-            // Calculates the world position to move to
+            // Calculates the world position to SetTask to
             Ray ray = cam.ScreenPointToRay(cursorPosition);
             RaycastHit hit;
             if(!Physics.Raycast(ray, out hit, cam.farClipPlane, mapMask)){ return; }
 
             foreach(Entity e in entities.selected){
-                IMove entity = e as IMove;                    
+                ITask entity = e as ITask;                    
+                if(!e || e.OwnerId != ownerId || entity == null){ continue; } // If not a character or is not owned by the player...
 
-                if(entity == null || e.OwnerId != ownerId){ continue; } // If not a character or is not owned by the player...
                 // Set targetPosition in character(s)
                 Vector3 pos = new Vector3(hit.point.x, e.transform.position.y, hit.point.z);
-                entity.Move(pos);
+                entity.SetTask(pos);
             }
         }          
     }
@@ -140,14 +140,14 @@ public class PlayerControls : MonoBehaviour{
     [System.Serializable] public class DragSettings{
         [SerializeField, Tooltip("The UI visual element")] Image dragUI;
         
-        [SerializeField, Tooltip("The colours to set the UI based on state")] Color addSelection = Color.green, removeSelection = Color.red;
+        [SerializeField, Tooltip("The colours to set the UI based on state")] Color addSelection = Color.green, reSetTaskSelection = Color.red;
 
         /// <summary>
         /// Visualiser for when we drag across the screen
         /// </summary>
         public void UpdateDragVisual(Vector3 start, Vector3 end, bool show, bool isAdding = true){
             // Apply a colour based on state
-            dragUI.color = (isAdding)? addSelection : removeSelection;
+            dragUI.color = (isAdding)? addSelection : reSetTaskSelection;
 
             // Sets position to the center between both points
             dragUI.rectTransform.position = (start + end) / 2;

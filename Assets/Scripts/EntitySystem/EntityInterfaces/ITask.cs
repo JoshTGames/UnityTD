@@ -8,14 +8,19 @@ using UnityEngine;
 
 namespace AstralCandle.Entity{
     /// <summary>
-    /// Allows entities to move around the scene
+    /// Allows entities to perform various actions
     /// </summary>
-    public interface IMove{
+    public interface ITask{
         /// <summary>
-        /// Moves an entity to a position whilst attempting to perform an action should it be required
+        /// Places a task on an entity with a position and action
         /// </summary>
         /// <param name="position">The position the entity will move to</param>
         /// <param name="action">The action an entity wants to perform</param>
-        public void Move(Vector3 position, Func<EntityERR> action = null);
+        public void SetTask(Vector3 position, Func<EntityERR> action = null);
+
+        /// <summary>
+        /// Gets the interaction radius of the entity 
+        /// </summary>
+        public float GetInteractRadius();
     }
 }

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using AstralCandle.TowerDefence;
 using UnityEngine;
 
@@ -17,12 +15,17 @@ namespace AstralCandle.Entity{
         [SerializeField, TextArea, Tooltip("Information about this entity")] string _description;
         [SerializeField, Tooltip("If true, will show all debugging gizmos associated to this entity")] bool showDebug;
 
-        int _ownerId = -1; // -1 means it is not owned
+        [SerializeField] int _ownerId = -1; // -1 means it is not owned
 
         /// <summary>
         /// The owner of this entity
         /// </summary>
         public int OwnerId{ get => _ownerId; }
+        public Collider _collider{
+            get;
+            private set;
+        }
+
         Vector3? cachedSize;
         SelectionCircle selectionObject;
         bool isDestroyed = false;
@@ -63,7 +66,10 @@ namespace AstralCandle.Entity{
         /// <summary>
         /// Initialises this entity ready for running behaviour on
         /// </summary>
-        protected virtual void Start() => PlayerControls.instance.entities.SubscribeToEntities(this);
+        protected virtual void Start(){
+            PlayerControls.instance.entities.SubscribeToEntities(this);
+            _collider = GetComponent<Collider>();
+        }
 
         /// <summary>
         /// Behaviour which is triggered upon destroying this entity

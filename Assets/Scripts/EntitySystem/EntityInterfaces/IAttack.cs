@@ -14,11 +14,11 @@ namespace AstralCandle.Entity{
         /// </summary>
         /// <param name="entity">The entity we want to attack</param>
         /// <return>An EntityERR code displaying if it was successful or not</return>
-        public EntityERR Attack(IHealth entity);
+        public EntityERR Attack(EntityHealth entity);
 
         /// <summary>
         /// Returns the cooldown till this entity can attack
         /// </summary>
         public float GetCooldown();
     }
-}
+} 
