@@ -144,10 +144,19 @@ public static class Utilities{
         value = (value + 1) % maxValue;
     }
 
-    [Serializable] public class MinMax{
+    [Serializable] public class MinMaxF{
         public float min, max;
 
-        public MinMax(float min, float max){
+        public MinMaxF(float min, float max){
+            this.min = min;
+            this.max = max;
+        }
+    }
+
+    [Serializable] public class MinMax{
+        public int min, max;
+
+        public MinMax(int min, int max){
             this.min = min;
             this.max = max;
         }
