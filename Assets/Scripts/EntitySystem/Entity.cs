@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace AstralCandle.Entity{
     /// <summary>
-    /// 
+    /// Base class for all entities; Allows for selection and tooltip abilities for the player
     /// </summary>
     public abstract class Entity : MonoBehaviour, ISelectable{
         [SerializeField, Tooltip("The name of this entity")] string _name;
@@ -76,7 +76,7 @@ namespace AstralCandle.Entity{
         /// </summary>
         protected virtual void OnDestroy(){
             PlayerControls.instance.entities.SubscribeToEntities(this, true);
-            isDestroyed = true;
+            isDestroyed = true;            
         }
 
         /// <summary>

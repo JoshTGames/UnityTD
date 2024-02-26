@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using AstralCandle.Entity;
 
-public class Orc : EntityCharacter, IAttack{
+public class Orc : EntityCharacter, IAttack, IWave{
     [Header("Attack Settings")]
     [SerializeField] LayerMask entityLayer;
     [SerializeField] IHealth.InflictionType damageInfliction;
@@ -92,7 +92,9 @@ public class Orc : EntityCharacter, IAttack{
 
 
     protected override void OnDamage(){}
-    protected override void OnDeath(){}
+    protected override void OnDeath(){
+        Destroy(gameObject);
+    }
     protected override void OnHeal(){}
     protected override void OnImmortalHit(){}
 
@@ -108,12 +110,12 @@ public class Orc : EntityCharacter, IAttack{
     }
 
     protected override bool OnDrawGizmos(){
-            #if UNITY_EDITOR
-            if(!base.OnDrawGizmos()){ return false; }
+        #if UNITY_EDITOR
+        if(!base.OnDrawGizmos()){ return false; }
 
-            Handles.color = Color.red;
-            Handles.DrawWireDisc(transform.position, transform.up, attackRadius);
-            return true;
-            #endif
-        }
+        Handles.color = Color.red;
+        Handles.DrawWireDisc(transform.position, transform.up, attackRadius);
+        return true;
+        #endif
+    }
 }

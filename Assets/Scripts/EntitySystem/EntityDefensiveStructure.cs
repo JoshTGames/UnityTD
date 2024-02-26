@@ -10,6 +10,9 @@ using UnityEngine;
 */
 
 namespace AstralCandle.Entity{
+    /// <summary>
+    /// EntityStructure with the ability to attack other entites
+    /// </summary>
     public abstract class EntityDefensiveStructure : EntityStructure, IAttack{
         [Header("Attack Settings")]
         [SerializeField] LayerMask entityLayer;

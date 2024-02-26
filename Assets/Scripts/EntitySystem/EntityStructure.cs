@@ -7,6 +7,9 @@ using UnityEngine;
 */
 
 namespace AstralCandle.Entity{
+    /// <summary>
+    /// EntityHealth with the ability of housing other entities
+    /// </summary>
     public abstract class EntityStructure : EntityHealth, IHousing{
         [Header("Structure Settings")]
         [SerializeField] int maxOccupants = 1;

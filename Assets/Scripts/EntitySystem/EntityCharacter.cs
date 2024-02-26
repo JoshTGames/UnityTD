@@ -53,6 +53,13 @@ namespace AstralCandle.Entity{
             steering = new ContextSteering(aISettings.steeringCircleResolution, aISettings.steeringCircleRadius, aISettings.steeringObstacles, aISettings.extraInterest, aISettings.dangerMultiplier);
         }
 
+        protected override void OnDestroy(){
+            base.OnDestroy();
+
+            // If this entity is a wave-based character then attempt to remove it from the loop on destroy
+            (this as IWave)?.RemoveEntityFromWave(this.GetInstanceID());
+        }
+
         protected override bool OnDrawGizmos(){
             #if UNITY_EDITOR
             if(!base.OnDrawGizmos()){ return false; }
