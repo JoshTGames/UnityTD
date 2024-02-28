@@ -8,6 +8,7 @@ using TMPro;
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
         --- Copyright ©️ 2024-2025 AstralCandle Games. All Rights Reserved. ---
 */
+
 namespace AstralCandle.TowerDefence{
     public class EntityTooltip : MonoBehaviour{
         public static EntityTooltip instance;
