@@ -5660,6 +5660,7 @@ MonoBehaviour:
   minOrthroSize: 3
   minZoom: 0.25
   zoomSmoothing: 0.5
+  pivotingSensitivity: 10
   selectionGameObject: {fileID: 5828576437116565029, guid: 242aa6b038a9ca34d8a078e2eeaa8dd2,
     type: 3}
   dragSettings:
@@ -5697,13 +5698,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 424874146d993944291575f9544012c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   frequency: 1
-  amplitude: 0.05
+  amplitude: 0.15
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

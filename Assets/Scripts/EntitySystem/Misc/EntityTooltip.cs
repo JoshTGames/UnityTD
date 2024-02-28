@@ -69,6 +69,11 @@ namespace AstralCandle.TowerDefence{
         /// Positioning
         /// </summary>
         private void LateUpdate() {
+            if(PlayerControls.instance.IsPivoting){                
+                tooltip = null;
+                return;
+            }
+            
             Cursor.visible = tooltip == null;
             if(tooltip == null){ return; }
 

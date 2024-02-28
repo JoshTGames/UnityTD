@@ -11,9 +11,9 @@ public class CameraBobble : MonoBehaviour{
     [SerializeField] float frequency, amplitude;    
     Vector3 cachedPosition;
 
-    private void Awake() => cachedPosition = transform.position;
+    private void Awake() => cachedPosition = transform.localPosition;
 
     void LateUpdate(){
-        transform.position = cachedPosition + new Vector3(Mathf.Cos((Time.time * frequency) / 2) * amplitude, Mathf.Sin(Time.time * frequency) * amplitude);    
+        transform.localPosition = cachedPosition + new Vector3(Mathf.Cos((Time.time * frequency) / 2) * amplitude, Mathf.Sin(Time.time * frequency) * amplitude);    
     }    
 }

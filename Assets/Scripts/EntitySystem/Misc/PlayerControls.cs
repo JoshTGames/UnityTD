@@ -1,10 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using AstralCandle.Entity;
-using TMPro;
+using AstralCandle.TowerDefence;
 
 /*
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
@@ -19,6 +17,7 @@ public class PlayerControls : MonoBehaviour{
     [SerializeField] float minOrthroSize = 5f;
     [SerializeField, Range(0.1f, 0.5f)] float minZoom;
     [SerializeField] float zoomSmoothing = 0.1f;
+    [SerializeField] float pivotingSensitivity = 1;
     [SerializeField] SelectionCircle selectionGameObject;
     [SerializeField] DragSettings dragSettings;
     [SerializeField] LayerMask entityMask, mapMask;
@@ -34,7 +33,16 @@ public class PlayerControls : MonoBehaviour{
     /// Used for extra behaviour
     /// </summary>
     bool shiftDown, altDown;
+    public bool IsPivoting{
+        get;
+        private set;
+    }
+
     float _targetZoom = 1, zoomVelocity;
+
+    Vector2 mousePivotRotation;
+    Quaternion pivotRotation;
+    Vector3 pivotVelocity;
 
     Vector3 peakPosition, peakVelocity;
 
@@ -52,12 +60,14 @@ public class PlayerControls : MonoBehaviour{
     Rect selectionBox;
     #endregion
 
-    Vector3 _cursorPosition;
+    Vector3 _cursorPosition, previousCursorPosition;
     public Vector3 cursorPosition{
         get => _cursorPosition;
         private set{
+            previousCursorPosition = _cursorPosition;
             _cursorPosition = value;
-            entities.hovered = (selectStartPosition == null)? entities.PositionOverEntity(value, entityMask): null;
+            entities.hovered = (selectStartPosition == null && !IsPivoting)? entities.PositionOverEntity(value, entityMask): null;
+            if(entities.hovered == null){ EntityTooltip.instance.tooltip = null; } // Should hopefully stop glitching where text stays active
 
             // Dragging behaviour
             if(selectStartPosition != null){
@@ -71,6 +81,10 @@ public class PlayerControls : MonoBehaviour{
         }
     }
 
+    /// <summary>
+    /// Calculates the orthrographic size for the camera so that the map is always within frame
+    /// </summary>
+    /// <returns>The size the camera should be if its to have the contents stay within frame</returns>
     float CalculateOrthrographicSize(){
         float mapScale = GameLoop.instance.MapScale;
         float height = mapScale;
@@ -79,14 +93,19 @@ public class PlayerControls : MonoBehaviour{
         return Mathf.Max(width, height) * .5f;
     }
 
-    Vector3 GetPeakPosition(Vector3 previousPosition){
+    /// <summary>
+    /// Calculates the position to focus on when zooming in
+    /// </summary>
+    /// <param name="safePosition">The position to fall back on if a new position can be found</param>
+    /// <returns>The position the player is wanting to zoom in on</returns>
+    Vector3 GetPeakPosition(Vector3 safePosition){
         Ray ray = cam.ScreenPointToRay(cursorPosition);
         RaycastHit hit;
         Physics.Raycast(ray, out hit, cam.farClipPlane, mapMask);
-        if(!hit.collider){ return previousPosition; }
+        if(!hit.collider){ return safePosition; }
         Vector3 dir = hit.point - map.transform.position;
 
-        return map.transform.position + dir.normalized * dir.magnitude * .5f;
+        return map.transform.position + dir * .5f;
     }
 
     private void LateUpdate(){
@@ -96,11 +115,13 @@ public class PlayerControls : MonoBehaviour{
         float newSize = Utilities.Remap(TargetZoom, 0, 1, Mathf.Max(size * minZoom, minOrthroSize), size);
         cam.orthographicSize = Mathf.SmoothDamp(cam.orthographicSize, newSize, ref zoomVelocity, zoomSmoothing);
         transform.parent.position = Vector3.SmoothDamp(transform.parent.position, peakPosition, ref peakVelocity, zoomSmoothing);
+        transform.parent.rotation = Utilities.SmoothDampQuaternion(transform.parent.rotation, pivotRotation, ref pivotVelocity, zoomSmoothing);
     }
 
     private void Awake(){
         instance = this;
         cam = Camera.main;
+        previousCursorPosition = _cursorPosition;
         entities = new EntitySelection<Entity>(Camera.main, selectionGameObject);
     }
 
@@ -108,7 +129,8 @@ public class PlayerControls : MonoBehaviour{
     public void OnZoom(InputValue value) => TargetZoom = Mathf.Clamp(TargetZoom + (value.Get<float>() * zoomSensitivity), 0, 1);
     public void OnShiftSelect(InputValue value) => shiftDown = value.Get<float>() > 0;
     public void OnAltSelect(InputValue value) => altDown = value.Get<float>() > 0;
-    public void OnSelect(InputValue value){        
+    public void OnSelect(InputValue value){
+        if(IsPivoting){ return; }   
         switch(value.Get<float>()){
             case 1: // Start                    
                 selectStartPosition = cursorPosition;
@@ -137,6 +159,7 @@ public class PlayerControls : MonoBehaviour{
         }
     }
     public void OnAction(InputValue value){
+        if(IsPivoting){ return; }
         Camera cam = Camera.main;
 
         // Figure out task
@@ -181,7 +204,21 @@ public class PlayerControls : MonoBehaviour{
             }
         }          
     }
+    public void OnPivot(InputValue value) => IsPivoting = value.Get<float>() >0;
+    public void OnCursorVelocity(InputValue value){
+        Cursor.visible = !IsPivoting;
+        Cursor.lockState = (IsPivoting)? CursorLockMode.Locked: CursorLockMode.None;
 
+        if(!IsPivoting){ return; }
+        Vector2 _value = value.Get<Vector2>();
+        mousePivotRotation += new Vector2(_value.x, -_value.y) * pivotingSensitivity;        
+
+        float pitch = mousePivotRotation.x * Mathf.Deg2Rad; // Left/Right
+        // float yaw = mousePivotRotation.y * Mathf.Deg2Rad; // Up/Down
+        Quaternion pitchRot = Quaternion.AngleAxis(pitch, Vector3.up);
+        // Quaternion yawRot = Quaternion.AngleAxis(yaw, transform.right);
+        pivotRotation = Quaternion.Normalize(pitchRot);
+    }
     [System.Serializable] public class DragSettings{
         [SerializeField, Tooltip("The UI visual element")] Image dragUI;
         
