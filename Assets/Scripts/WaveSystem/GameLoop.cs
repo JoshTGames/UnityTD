@@ -5,6 +5,7 @@ using UnityEngine.Events;
 using System;
 using UnityEditor;
 using AstralCandle.Entity;
+using System.Linq;
 
 /*
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
@@ -13,68 +14,67 @@ using AstralCandle.Entity;
 
 public class GameLoop : MonoBehaviour{    
     public static GameLoop instance;
-    const int NUMBER_OF_SPAWN_DIRECTIONS = 4; // UP, DOWN, LEFT, RIGHT
-
+    
+    #region EDITOR VARIABLES
     [SerializeField] bool showDebug;
     [SerializeField] Transform map;
     [SerializeField] Settings settings;
     [SerializeField] WaveProfile[] waves;
-
-    int _wave = 0, group = 0;
-    bool spawnGroup = false;
-    public float intermission{
-        get;
-        private set;
-    } = 0;
-    float spawnDelayElapsed = 0;
-    float mapScale;
-
-    /// <summary>
-    /// The concurrent wave we are on
-    /// </summary>
-    public int wave{
-        get => _wave;
-        private set{
-            if(value == _wave){ return; }
-            _wave = value;
-            previousScale = targetScale;
-
-            targetScale = new Vector3(mapScale, 1, mapScale);
-            scalingElapsedTime = 0;
-            playFX = true;
-        }
-    }
-
-    /// <summary>
-    /// Shows the con-current group that we will use to spawn entities
-    /// </summary>
-    WaveProfile.SpawnGroupData CurrentWaveGroup{ get => (waves[wave].waveData.Length > group)? waves[wave].waveData[group] : null; }
-
-    /// <summary>
-    /// IDs of the characters
-    /// </summary>
-    HashSet<int> aliveEntities = new();
-
+    #endregion
     #region COSMETIC
     public UnityEvent<Transform> OnScaled;
     Vector3 previousScale, targetScale;
+    
     float scalingElapsedTime = 0;
     bool playFX = false;
     #endregion
-
-    void Start(){
-        instance = this;   
-
-        targetScale = map.localScale;
-        previousScale = targetScale;
-
-        intermission = waves[wave].intermission;
-
-        UpdateMapScale();
+    #region PRIVATE VARIABLES
+    const int NUMBER_OF_SPAWN_DIRECTIONS = 4; // UP, DOWN, LEFT, RIGHT
+    int _wave = 0;
+    
+    float _mapScale;
+    float MapScale{
+        get => _mapScale;
+        set{
+            if(value == _mapScale){ return; }
+            _mapScale = value;
+            playFX = true;
+            scalingElapsedTime = 0;
+            previousScale = targetScale;
+            targetScale = new(value, map.localScale.y, value);
+        } 
     }
+    #endregion
 
-    private void Update() {
-        #region ANIMATION
+    
+    
+    /// <summary>
+    /// The concurrent wave we are on
+    /// </summary>
+    public int Wave{
+        get => _wave;
+        private set{
+            if(value == _wave){ return; }
+            _wave = value;            
+        }
+    }
+   
+    /// <summary>
+    /// The current wave we are playing on
+    /// </summary>
+    public Game CurrentGame{
+        get;
+        private set;
+    }
+    
+
+
+    //--- FUNCTIONS
+
+    /// <summary>
+    /// Scales the map in size to match the 'TargetScale' vector
+    /// </summary>
+    void PlayMapAnimation(){
         scalingElapsedTime += Time.deltaTime;
         float percent = Mathf.Clamp01(scalingElapsedTime / settings.scalingDuration);
         float curve = settings.scalingAnimation.Evaluate(percent);
@@ -85,69 +85,30 @@ public class GameLoop : MonoBehaviour{
             OnScaled?.Invoke(map); 
             playFX = false;
         }
-        #endregion
-
-        intermission -= (intermission >0)? Time.deltaTime : 0;
-        spawnDelayElapsed -= (spawnDelayElapsed >0)? Time.deltaTime : 0;
-
-        if(intermission > 0){ return; }
-
-        if(spawnDelayElapsed <= 0 && CurrentWaveGroup != null){
-            for(int i = 0; i < CurrentWaveGroup.quantity; i++){
-                foreach(IWave _char in CurrentWaveGroup.group.entities){
-                    if(_char == null){ continue; } // Stops any non-'IWave' entites from being spawned
-                    EntityCharacter character = _char as EntityCharacter;
-
-                    float angle = Utilities.CalculateRadianAngle((int)CurrentWaveGroup.spawnDirection, NUMBER_OF_SPAWN_DIRECTIONS);
-                    Vector3 directionalOffset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * (mapScale/2);
-
-                    bool isHorizontal = (int)CurrentWaveGroup.spawnDirection == 1 || (int)CurrentWaveGroup.spawnDirection == 3;
-                    float rndValue = UnityEngine.Random.Range(-1f, 1f);
-
-                    
-                    // Left/Right
-                    directionalOffset.x = (isHorizontal)? rndValue * mapScale/3 : directionalOffset.x; 
-                    directionalOffset.y = 1.25f;
-                    // Up/Down
-                    directionalOffset.z = (!isHorizontal)? rndValue * mapScale/3 : directionalOffset.z; 
-
-
-                    // Spawns the character and adds it to alive entities list
-                    aliveEntities.Add(
-                        Instantiate(
-                            character, 
-                            map.position + directionalOffset, 
-                            Quaternion.identity, 
-                            GameObject.Find("_GAME_RESOURCES_").transform
-                        ).GetInstanceID()
-                    );
-                }
-            }
-            spawnDelayElapsed = CurrentWaveGroup.spawnDelay;
-            group++;
-        }                
     }
+
+    void NewGame() => CurrentGame = new Game(waves[Wave], map.position, MapScale, (Wave + 1).ToString());
+
+    void Awake() => instance = this;
 
     /// <summary>
-    /// Removes the entity from the data so we can start the next wave
+    /// Initiates this script
     /// </summary>
-    /// <param name="id"></param>
-    public void RemoveEntity(int id){
-        if(!aliveEntities.Contains(id)){ return; }
-        aliveEntities.Remove(id);
-        
-        // If there are no alive entities and there are no more groups to spawn...
-        if(aliveEntities.Count <= 0 && CurrentWaveGroup == null && waves.Length-1 > wave){
-            wave++;
-            group = 0;
-            intermission = waves[wave].intermission;
-            UpdateMapScale();
-        }
+    void Start(){
+        MapScale = Utilities.Remap(Wave + 1, 1, waves.Length, settings.mapSize.min, settings.mapSize.max);
+        NewGame();
     }
 
-    void UpdateMapScale(){
-        mapScale = Utilities.Remap(wave, 1, waves.Length, settings.mapSize.min, settings.mapSize.max);
-        mapScale = Mathf.Clamp(Grid.FloorToGrid(mapScale, settings.cellSize), settings.mapSize.min, settings.mapSize.max);
+    private void Update() {
+        PlayMapAnimation();
+
+        // Ensures the game is always running
+        if(CurrentGame.Run() && Wave < waves.Length-1){
+            Wave++;
+            MapScale = Utilities.Remap(Wave + 1, 1, waves.Length, settings.mapSize.min, settings.mapSize.max);
+            NewGame();
+            return;
+        }
     }
 
     private void OnDrawGizmos() {
@@ -158,6 +119,190 @@ public class GameLoop : MonoBehaviour{
         #endif
     }
 
+    public enum GameState{
+        Init,
+        Break,
+        Wave
+    }
+
+    /// <summary>
+    /// Used to setup each wave
+    /// </summary>
+    public class Game{
+        #region CLASS_VARIABLES
+        GameState _state;
+        public GameState State{
+            get => _state;
+            private set{
+                if(value == _state){ return; }
+                _state = value;
+                ProgressBar.instance.UpdateState(State.ToString());
+                ProgressBar.instance.UpdateColour((value == GameState.Break)? wave.intermissionColour : wave.waveColour);
+                if(value == GameState.Wave){ 
+                    ProgressBar.instance.UpdateValue(waveName);
+                    ProgressBar.instance.UpdateTarget(0); 
+                }
+            }
+        }
+
+        Vector3 position;
+        float scale;
+        string waveName;
+
+        float intermission;
+
+        /// <summary>
+        /// Shows how long the intermission is
+        /// </summary>
+        
+        WaveProfile wave;
+
+        #region ENTITY COUNTERS
+        /// <summary>
+        /// IDs of the characters
+        /// </summary>
+        public HashSet<int> aliveEntities{
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// The entities remaining for this wave
+        /// </summary>
+        int totalEntities;
+        
+        int _entitiesCleared;
+        /// <summary>
+        /// The number of entities cleared in this wave. | UPDATES THE PROGRESS BAR WHEN SET
+        /// </summary>
+        int EntitiesCleared{
+            get => _entitiesCleared;
+            set{
+                _entitiesCleared = value;
+                ProgressBar.instance.UpdateTarget(CalculateProgress());
+            }
+        }
+        #endregion
+        
+        int spawnGroupIndex;
+        float elapsedSpawnDelay;
+        #endregion
+
+        /// <summary>
+        /// Constructor to create a new game
+        /// </summary>
+        /// <param name="waveData">Information about this wave</param>
+        /// <param name="position">The base position of the map</param>
+        /// <param name="scale">The map scale so we can spawn the entities on the edges</param>
+        public Game(WaveProfile waveData, Vector3 position, float scale, string waveName = null){
+            this.wave = waveData;
+
+            aliveEntities = new();
+            this.intermission = waveData.intermission;
+            this.totalEntities = waveData.CalculateEntities();
+            this.spawnGroupIndex = 0;
+            this.EntitiesCleared = 0;
+
+            this.position = position;
+            this.scale = scale;            
+            
+            waveName ??= waveData.name;
+            this.waveName = waveName;
+        }
+
+        /// <summary>
+        /// Returns the group data of the given index for this wave
+        /// </summary>
+        WaveProfile.SpawnGroupData GetWaveGroup() => wave.waveData[Mathf.Clamp(spawnGroupIndex, 0, wave.waveData.Length-1)];
+
+        /// <summary>
+        /// Calculates a position on the edge of the map to spawn an entity
+        /// </summary>
+        /// <returns>The position we should spawn an entity at</returns>
+        Vector3 CalculatePosition(){
+            int spawnDirection = (int)GetWaveGroup().spawnDirection;
+            bool isHorizontal = spawnDirection == 1 || spawnDirection == 3;
+            float angle = Utilities.CalculateRadianAngle(spawnDirection, NUMBER_OF_SPAWN_DIRECTIONS);
+
+            Vector3 offset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * (scale/2);
+
+            float rndValue = UnityEngine.Random.Range(-1f, 1f);
+            float offsetf = rndValue * scale/3;
+            offset.x = (isHorizontal)? offsetf: offset.x; // Left/Right
+            offset.y = 1.25f;
+            offset.z = (!isHorizontal)? offsetf: offset.z; // Up/Down
+            return position + offset;
+        }
+        
+        /// <summary>
+        /// Spawns an entity on the edge of the map on a given direction
+        /// </summary>
+        /// <param name="character">The entity we wish to spawn</param>
+        void SpawnEntity(EntityCharacter character){
+            // Spawns the character and adds it to alive entities list
+            aliveEntities.Add(
+                Instantiate(
+                    character, 
+                    CalculatePosition(), 
+                    Quaternion.identity, 
+                    GameObject.Find("_GAME_RESOURCES_").transform
+                ).GetInstanceID()
+            );
+        } 
+
+        /// <summary>
+        /// Attempts to remove the entity from the 'aliveEntities' hashSet so we can see how complete the wave is
+        /// </summary>
+        /// <param name="id">The transform ID of the entity</param>
+        public void RemoveEntity(int id){
+            if(!aliveEntities.Contains(id)){ return; }
+            aliveEntities.Remove(id);
+            EntitiesCleared++;
+        }
+    
+        /// <summary>
+        /// Calculates wave progression 
+        /// </summary>
+        /// <return>Value between 0-1</return>
+        public float CalculateProgress() => Mathf.Clamp01((float)EntitiesCleared / totalEntities);
+
+        /// <summary>
+        /// Runs this wave; Spawning entities
+        /// </summary>
+        public bool Run(){
+            if(CalculateProgress() >= 1){ return true; } // Completed wave!
+
+            intermission -= Time.deltaTime;
+            State = (intermission >0)? GameState.Break : GameState.Wave;
+            
+            switch(State){
+                case GameState.Break:                    
+                    ProgressBar.instance.UpdateValue(Mathf.Ceil(intermission).ToString());
+                    ProgressBar.instance.UpdateTarget(intermission / wave.intermission);
+                    break;
+                case GameState.Wave:
+                    // Spawning
+                    WaveProfile.SpawnGroupData groupData = GetWaveGroup();
+                    elapsedSpawnDelay -= (elapsedSpawnDelay >0)? Time.deltaTime : 0;
+                    if(elapsedSpawnDelay <= 0 && spawnGroupIndex <= wave.waveData.Length-1){
+                        for(int i = 0; i < groupData.quantity; i++){
+                            foreach(IWave _char in groupData.group.entities.Cast<IWave>()){
+                                if(_char == null){ continue; } // Stops any non-'IWave' entites from being spawned
+                                SpawnEntity(_char as EntityCharacter);
+                            }
+                        }
+                        elapsedSpawnDelay = groupData.spawnDelay;
+                        spawnGroupIndex++;
+                    }
+                    break;
+            }            
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// The settings which controls this game loop
+    /// </summary>
     [Serializable] public class Settings{
         public AnimationCurve scalingAnimation;
         public float scalingDuration = 2f;

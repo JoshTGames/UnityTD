@@ -82,8 +82,8 @@ namespace AstralCandle.Entity{
             // Interact radius
             Handles.color = Color.white;
             Handles.DrawWireDisc(transform.position, Vector3.up, interactRadius, 2f);
-            return true;
             #endif
+            return true;
         }
 
         /// <summary>

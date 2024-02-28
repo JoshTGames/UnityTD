@@ -76,8 +76,8 @@ namespace AstralCandle.Entity{
 
             Handles.color = Color.red;
             Handles.DrawWireDisc(transform.position, transform.up, attackRadius);
-            return true;
             #endif
+            return true;
         }
     }
 }

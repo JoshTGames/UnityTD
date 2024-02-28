@@ -12,13 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ecd5ca0c6f7084c9ee7d5f9c0f17a1, type: 3}
   m_Name: 1
   m_EditorClassIdentifier: 
-  intermission: 1
+  intermission: 10
+  intermissionColour: {r: 0, g: 0.5556996, b: 1, a: 1}
+  waveColour: {r: 0, g: 1, b: 0.5294118, a: 1}
   waveData:
   - group: {fileID: 11400000, guid: 07787ff1cf3276849b072b224f7485a1, type: 2}
     quantity: 1
     spawnDelay: 5
-    spawnDirection: 0
+    spawnDirection: 1
   - group: {fileID: 11400000, guid: 07787ff1cf3276849b072b224f7485a1, type: 2}
     quantity: 2
     spawnDelay: 0
-    spawnDirection: 1
+    spawnDirection: 2
