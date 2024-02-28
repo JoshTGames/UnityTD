@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using AstralCandle.Entity;
+using TMPro;
 
 /*
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
@@ -12,19 +13,39 @@ using AstralCandle.Entity;
 
 
 public class PlayerControls : MonoBehaviour{
+    public static PlayerControls instance;
+    [SerializeField, Tooltip("Not much point to change, but ensures owned entities can be compared to the player")] int _ownerId = 0;
+    [SerializeField] float zoomSensitivity = 1;
+    [SerializeField] float minOrthroSize = 5f;
+    [SerializeField, Range(0.1f, 0.5f)] float minZoom;
+    [SerializeField] float zoomSmoothing = 0.1f;
+    [SerializeField] SelectionCircle selectionGameObject;
     [SerializeField] DragSettings dragSettings;
     [SerializeField] LayerMask entityMask, mapMask;
-    [SerializeField] SelectionCircle selectionGameObject;
-    [SerializeField, Tooltip("Not much point to change, but ensures owned entities can be compared to the player")] int _ownerId = 0;
-    public static PlayerControls instance;
+    [SerializeField] Collider map;
+
+
     public EntitySelection<Entity> entities;
-    
     public int ownerId{ get => _ownerId; }
+
+    Camera cam;
 
     /// <summary>
     /// Used for extra behaviour
     /// </summary>
     bool shiftDown, altDown;
+    float _targetZoom = 1, zoomVelocity;
+
+    Vector3 peakPosition, peakVelocity;
+
+    float TargetZoom{
+        get => _targetZoom;
+        set{
+            if(value == _targetZoom){ return; }
+            _targetZoom = value;
+            peakPosition = Vector3.Lerp(map.transform.position, GetPeakPosition(transform.parent.position), 1 - value);
+        }
+    }
 
     #region Drag selection variables
     Vector3? selectStartPosition;
@@ -50,17 +71,41 @@ public class PlayerControls : MonoBehaviour{
         }
     }
 
+    float CalculateOrthrographicSize(){
+        float mapScale = GameLoop.instance.MapScale;
+        float height = mapScale;
+        float width = mapScale * cam.pixelHeight / cam.pixelWidth;
 
+        return Mathf.Max(width, height) * .5f;
+    }
 
+    Vector3 GetPeakPosition(Vector3 previousPosition){
+        Ray ray = cam.ScreenPointToRay(cursorPosition);
+        RaycastHit hit;
+        Physics.Raycast(ray, out hit, cam.farClipPlane, mapMask);
+        if(!hit.collider){ return previousPosition; }
+        Vector3 dir = hit.point - map.transform.position;
 
-    private void LateUpdate() => dragSettings.UpdateDragVisual((selectStartPosition != null)? (Vector3)selectStartPosition : Vector3.zero, cursorPosition, selectStartPosition != null, !altDown);
+        return map.transform.position + dir.normalized * dir.magnitude * .5f;
+    }
+
+    private void LateUpdate(){
+        dragSettings.UpdateDragVisual((selectStartPosition != null)? (Vector3)selectStartPosition : Vector3.zero, cursorPosition, selectStartPosition != null, !altDown);
+
+        float size = CalculateOrthrographicSize();
+        float newSize = Utilities.Remap(TargetZoom, 0, 1, Mathf.Max(size * minZoom, minOrthroSize), size);
+        cam.orthographicSize = Mathf.SmoothDamp(cam.orthographicSize, newSize, ref zoomVelocity, zoomSmoothing);
+        transform.parent.position = Vector3.SmoothDamp(transform.parent.position, peakPosition, ref peakVelocity, zoomSmoothing);
+    }
+
     private void Awake(){
         instance = this;
+        cam = Camera.main;
         entities = new EntitySelection<Entity>(Camera.main, selectionGameObject);
     }
 
     public void OnCursor(InputValue value) => cursorPosition = value.Get<Vector2>();
-    // public void OnZoom(InputValue value) => targetZoom += value.Get<float>() * zoomSensitivity;
+    public void OnZoom(InputValue value) => TargetZoom = Mathf.Clamp(TargetZoom + (value.Get<float>() * zoomSensitivity), 0, 1);
     public void OnShiftSelect(InputValue value) => shiftDown = value.Get<float>() > 0;
     public void OnAltSelect(InputValue value) => altDown = value.Get<float>() > 0;
     public void OnSelect(InputValue value){        

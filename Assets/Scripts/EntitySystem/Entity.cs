@@ -48,6 +48,7 @@ namespace AstralCandle.Entity{
         }
 
         public void OnIsSelected(SelectionCircle obj){
+            if(isDestroyed){ return; }
             if(obj){ 
                 if(!selectionObject){
                     selectionObject = Instantiate(obj, transform.position, obj.transform.rotation, GameObject.Find("_GAME_RESOURCES_")?.transform); 

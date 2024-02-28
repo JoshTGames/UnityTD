@@ -33,9 +33,9 @@ public class GameLoop : MonoBehaviour{
     int _wave = 0;
     
     float _mapScale;
-    float MapScale{
+    public float MapScale{
         get => _mapScale;
-        set{
+        private set{
             if(value == _mapScale){ return; }
             _mapScale = value;
             playFX = true;
