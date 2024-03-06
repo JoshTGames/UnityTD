@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using AstralCandle.Animation;
 using AstralCandle.TowerDefence;
 using UnityEditor;
 using UnityEngine;
@@ -19,10 +21,19 @@ namespace AstralCandle.Entity{
         [SerializeField] IHealth.InflictionType damageInfliction;
         [SerializeField] int damage = 5;
         [SerializeField] float attackRadius = 2;
+        [SerializeField] float projectileHeightOffset = 0;
         [SerializeField] float cooldown = 1;
+        [SerializeField] GameObject projectile;
+        [SerializeField] float projectileSpeed;
+        [SerializeField] AnimationCurve easeInCurve;
+        [SerializeField] float easeInDuration = 1;
+        
+        List<Projectile> activeProjectiles;
         float elapsedTime;
+        protected bool isDead;
 
         protected EntityDefensiveStructure(int ownerId) : base(ownerId){}
+
 
         /// <summary>
         /// Queries the entity position against this to see if its within attacking range
@@ -48,26 +59,82 @@ namespace AstralCandle.Entity{
             return enemies;
         }
 
-        public virtual EntityERR Attack(EntityHealth entity){
+        public virtual EntityERR Attack(EntityHealth entity, bool ignoreCooldown = false){
             if(!entity){ return EntityERR.INVALID_CALL; }
             if(GetEfficiency() <= 0){ return EntityERR.NO_OCCUPANTS; }
             if(OwnerId == entity.OwnerId){ return EntityERR.IS_FRIENDLY; }
-            else if(elapsedTime > 0){ return EntityERR.UNDER_COOLDOWN; }
+            else if(elapsedTime > 0 && !ignoreCooldown){ return EntityERR.UNDER_COOLDOWN; }
             else if(!InRange(entity.transform.position)){ return EntityERR.NOT_IN_RANGE; }
 
-            elapsedTime = cooldown;
-
-            entity.Damage(Mathf.FloorToInt(damage * GetEfficiency()), damageInfliction, this);
+            int calculatedDMG = Mathf.FloorToInt(damage * (1f / GetMaxOccupants()));
+            entity.Damage(calculatedDMG, damageInfliction, this);
             return EntityERR.SUCCESS;
         }
 
         public float GetCooldown() => Mathf.Clamp01(elapsedTime / cooldown);
 
         protected override void Run(){
+            if(isDead && activeProjectiles.Count <= 0 && !IsDestroyed()){ 
+                DestroyEntity();
+                return; 
+            }
+
+            for(int i = 0; i < activeProjectiles.Count; i++){
+                if(isDead){ activeProjectiles[i].doEaseIn = false; }
+
+                activeProjectiles[i].EaseIn();
+                if(!activeProjectiles[i].Run(projectileSpeed)){ 
+                    continue; 
+                }
+
+                if(!activeProjectiles[i].obj){
+                    activeProjectiles.RemoveAt(i);
+                    i--;
+                }
+            }
+
+            // Will only drop cooldown if structure is populated
+            if(GetEfficiency() <= 0){ 
+                elapsedTime = cooldown;
+                return; 
+            }
+
+
             elapsedTime -= Time.fixedDeltaTime;
             List<EntityHealth> enemies = FindEnemies();
-            if(enemies.Count <= 0){ return; }
-            Attack(enemies[0]);
+            if(enemies.Count <= 0 || elapsedTime > 0){ return; }
+            elapsedTime = cooldown;
+
+            // Attacking
+            int occupants = GetOccupants();
+            for(int i = 0; i < occupants; i++){
+                EntityHealth e = enemies[i % enemies.Count];
+
+                float rndX = UnityEngine.Random.Range(-_collider.bounds.extents.x, _collider.bounds.extents.x);
+                float rndZ = UnityEngine.Random.Range(-_collider.bounds.extents.z, _collider.bounds.extents.z);
+                Vector3 startPos = _collider.bounds.center + new Vector3(rndX, _collider.bounds.extents.y, rndZ);
+
+                AnimationInterpolation newSettings = new AnimationInterpolation(easeInCurve, easeInDuration);
+                activeProjectiles.Add(new Projectile(projectile, startPos, e.transform, projectileHeightOffset, newSettings, () => Attack(e, true)));
+            }
+        }
+
+
+        protected override void OnDeath() => isDead = true;
+
+        protected override void Start(){
+            base.Start();
+            activeProjectiles = new();
+        }
+
+        protected override bool OnValidate() {
+            if(!base.OnValidate()){ return false; }
+
+            Vector3 startPos = _collider.bounds.center + new Vector3(0, _collider.bounds.extents.y);
+            Vector3 endPos = _collider.bounds.center - new Vector3(0, _collider.bounds.extents.y) + transform.forward * attackRadius;
+            
+
+            return true;
         }
 
         protected override bool OnDrawGizmos(){
@@ -76,8 +143,78 @@ namespace AstralCandle.Entity{
 
             Handles.color = Color.red;
             Handles.DrawWireDisc(transform.position, transform.up, attackRadius);
+
+            // Vector3 prvPosition = curve.Evaluate(0);
+            // for(int i = 1; i < 20; i++){
+            //     Vector3 position = curve.Evaluate(i / 20f);
+            //     Handles.DrawLine(prvPosition, position, 0.5f);
+            //     prvPosition = position;
+            // }
             #endif
             return true;
+        }
+    
+        [Serializable] public class Projectile{
+            AnimationInterpolation spawnSettings;
+            public Transform obj{
+                get;
+                private set;
+            }
+
+            Vector3 cachedSize;
+            Vector3 startPos, previousTargetPosition;
+            Transform target;
+            float originYOffset = 0;
+            Func<EntityERR> OnComplete;
+
+            float elapsed = 0;
+            public bool doEaseIn = true;
+
+            public Projectile(GameObject projectile, Vector3 startPos, Transform target, float originYOffset, AnimationInterpolation spawnSettings, Func<EntityERR> OnComplete = null){
+                this.obj = Instantiate(projectile, startPos, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform).transform;
+                this.startPos = startPos;
+                this.target = target;
+                this.originYOffset = originYOffset;
+                this.spawnSettings = spawnSettings;
+                this.OnComplete = OnComplete;
+
+                previousTargetPosition = target.position;
+                this.cachedSize = obj.localScale;
+                this.doEaseIn = true;
+            }
+
+
+            /// <summary>
+            /// Runs this projectile
+            /// </summary>
+            /// <param name="t">The speed of the projectile</param>            
+            /// <returns>true if sequence is completed</returns>
+            public bool Run(float t){
+                if(!obj || !doEaseIn){ return !doEaseIn; }
+                elapsed += Time.fixedDeltaTime * t;
+
+                if(target){ previousTargetPosition = target.position; }
+                
+                Vector3 newPos = QuadraticCurveProjectiles.Evaluate(startPos, previousTargetPosition, elapsed, originYOffset);
+                if(newPos == obj.position && elapsed < 1){ return false; }
+                else if(newPos != obj.position){ obj.forward = (newPos - obj.position).normalized; }
+                obj.position = newPos;
+
+                if(elapsed >= 1 && doEaseIn){ 
+                    OnComplete?.Invoke();
+                    doEaseIn = false;
+                }
+                return !doEaseIn;
+            }
+
+
+            public void EaseIn(){
+                if(!obj){ return; }
+
+                float value = spawnSettings.Play(!doEaseIn);
+                obj.localScale = Vector3.LerpUnclamped(Vector3.zero, cachedSize, value);
+                if(obj.localScale.sqrMagnitude <= 0){ Destroy(obj.gameObject); }
+            }
         }
     }
 }

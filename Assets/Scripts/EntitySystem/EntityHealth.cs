@@ -90,7 +90,7 @@ namespace AstralCandle.Entity{
 
         //--- Abstract functions
         protected abstract void OnImmortalHit();
-        protected abstract void OnDeath();
+        protected virtual void OnDeath() => DestroyEntity();
         protected abstract void OnDamage();
         protected abstract void OnHeal();
     }

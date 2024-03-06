@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 
 /*
@@ -31,6 +32,8 @@ namespace AstralCandle.Entity{
         public ISelectable hovered{
             get => _hovered;
             set{
+                if(value == _hovered){ return; }
+                
                 if(_hovered != null && !_hovered.IsDestroyed()){ _hovered.OnIsHovered(false); }
                 _hovered = value;
                 if(_hovered != null && !_hovered.IsDestroyed()){ _hovered.OnIsHovered(true); }

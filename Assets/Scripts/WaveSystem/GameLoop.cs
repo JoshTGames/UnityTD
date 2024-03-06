@@ -1,11 +1,10 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using System;
 using UnityEditor;
 using AstralCandle.Entity;
 using System.Linq;
+using AstralCandle.Animation;
 
 /*
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
@@ -14,6 +13,7 @@ using System.Linq;
 
 public class GameLoop : MonoBehaviour{    
     public static GameLoop instance;
+    [HideInInspector] public List<EntityStructure> playerStructures = new();
     
     #region EDITOR VARIABLES
     [SerializeField] bool showDebug;
@@ -22,11 +22,8 @@ public class GameLoop : MonoBehaviour{
     [SerializeField] WaveProfile[] waves;
     #endregion
     #region COSMETIC
-    public UnityEvent<Transform> OnScaled;
     Vector3 previousScale, targetScale;
     
-    float scalingElapsedTime = 0;
-    bool playFX = false;
     #endregion
     #region PRIVATE VARIABLES
     const int NUMBER_OF_SPAWN_DIRECTIONS = 4; // UP, DOWN, LEFT, RIGHT
@@ -38,8 +35,7 @@ public class GameLoop : MonoBehaviour{
         private set{
             if(value == _mapScale){ return; }
             _mapScale = value;
-            playFX = true;
-            scalingElapsedTime = 0;
+            settings.scaleAnimation.ResetTime();
             previousScale = targetScale;
             targetScale = new(value, map.localScale.y, value);
         } 
@@ -75,16 +71,8 @@ public class GameLoop : MonoBehaviour{
     /// Scales the map in size to match the 'TargetScale' vector
     /// </summary>
     void PlayMapAnimation(){
-        scalingElapsedTime += Time.deltaTime;
-        float percent = Mathf.Clamp01(scalingElapsedTime / settings.scalingDuration);
-        float curve = settings.scalingAnimation.Evaluate(percent);
-        
-        map.localScale = Vector3.LerpUnclamped(previousScale, targetScale, curve);
-
-        if(percent >= 1 && playFX){ 
-            OnScaled?.Invoke(map); 
-            playFX = false;
-        }
+        float value = settings.scaleAnimation.Play();
+        map.localScale = Vector3.LerpUnclamped(previousScale, targetScale, value);
     }
 
     void NewGame() => CurrentGame = new Game(waves[Wave], map.position, MapScale, (Wave + 1).ToString());
@@ -304,8 +292,7 @@ public class GameLoop : MonoBehaviour{
     /// The settings which controls this game loop
     /// </summary>
     [Serializable] public class Settings{
-        public AnimationCurve scalingAnimation;
-        public float scalingDuration = 2f;
+        public AnimationInterpolation scaleAnimation;
         public Utilities.MinMax mapSize = new Utilities.MinMax(15, 100);
         public int cellSize = 1;
     }

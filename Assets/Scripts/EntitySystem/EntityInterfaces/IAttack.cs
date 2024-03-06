@@ -13,8 +13,9 @@ namespace AstralCandle.Entity{
         /// Attempts to attack an entity
         /// </summary>
         /// <param name="entity">The entity we want to attack</param>
+        /// <param name="ignoreCooldown">If true, will ignore the cooldown</param>
         /// <return>An EntityERR code displaying if it was successful or not</return>
-        public EntityERR Attack(EntityHealth entity);
+        public EntityERR Attack(EntityHealth entity, bool ignoreCooldown = false);
 
         /// <summary>
         /// Returns the cooldown till this entity can attack

@@ -15,13 +15,23 @@ namespace AstralCandle.Entity{
         [SerializeField] int maxOccupants = 1;
         List<Entity> housesEntities;
 
+
         protected EntityStructure(int ownerId) : base(ownerId){}
 
         public float GetEfficiency() => (float)housesEntities.Count / maxOccupants;
 
+        /// <summary>
+        /// Returns the number of occupants in this structure
+        /// </summary>
+        protected int GetOccupants() => housesEntities.Count;
+        /// <summary>
+        /// Returns the max number of occupants for this structure
+        /// </summary>
+        protected int GetMaxOccupants() => maxOccupants;
+
         public EntityERR AddOccupant(Entity entity){
             ITask task = entity as ITask;
-            if(task == null){ return EntityERR.INVALID_CALL; } // If the entity is not capable of performing tasks (This should not be called, but more of a guard clause)
+            if(task == null || entity == null){ return EntityERR.INVALID_CALL; } // If the entity is not capable of performing tasks (This should not be called, but more of a guard clause)
             else if(entity.OwnerId != OwnerId){ return EntityERR.NOT_PERMITTED; } // Ensures we are only adding units of our own
             else if(housesEntities.Count >= maxOccupants){ return EntityERR.MAX_OCCUPANTS; } // If full, we cannot add any more units
             else if(Vector3.Distance(_collider.ClosestPoint(entity.transform.position), entity.transform.position) > task.GetInteractRadius()){ return EntityERR.NOT_IN_RANGE; } // If we are not within range to interact with this entity
@@ -43,6 +53,13 @@ namespace AstralCandle.Entity{
         protected override void Start(){
             base.Start();
             housesEntities = new List<Entity>();
+            if(OwnerId != PlayerControls.instance?.ownerId){ return; }
+            GameLoop.instance?.playerStructures.Add(this);
+        }
+
+        protected override void OnDestroy(){
+            GameLoop.instance?.playerStructures.Remove(this);
+            base.OnDestroy();
         }
     }
 }

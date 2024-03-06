@@ -9,7 +9,6 @@ using AstralCandle.TowerDefence;
         --- Copyright ©️ 2024-2025 AstralCandle Games. All Rights Reserved. ---
 */
 
-
 public class PlayerControls : MonoBehaviour{
     public static PlayerControls instance;
     [SerializeField, Tooltip("Not much point to change, but ensures owned entities can be compared to the player")] int _ownerId = 0;
@@ -206,7 +205,7 @@ public class PlayerControls : MonoBehaviour{
     }
     public void OnPivot(InputValue value) => IsPivoting = value.Get<float>() >0;
     public void OnCursorVelocity(InputValue value){
-        Cursor.visible = !IsPivoting;
+        Cursor.visible = !IsPivoting && EntityTooltip.instance.tooltip == null;
         Cursor.lockState = (IsPivoting)? CursorLockMode.Locked: CursorLockMode.None;
 
         if(!IsPivoting){ return; }

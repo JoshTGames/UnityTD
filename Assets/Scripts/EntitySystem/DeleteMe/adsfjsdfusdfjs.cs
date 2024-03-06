@@ -5,8 +5,6 @@ public class adsfjsdfusdfjs : EntityDefensiveStructure{
 
     protected override void OnDamage(){}
 
-    protected override void OnDeath(){}
-
     protected override void OnHeal(){}
 
     protected override void OnImmortalHit(){}

@@ -4,6 +4,12 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using AstralCandle.TowerDefence;
+using AstralCandle.Animation;
+
+/*
+--- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
+        --- Copyright ©️ 2024-2025 AstralCandle Games. All Rights Reserved. ---
+*/
 
 namespace AstralCandle.Entity{
     public class SelectionCircle : MonoBehaviour{
@@ -61,8 +67,8 @@ namespace AstralCandle.Entity{
         }
 
         private void LateUpdate() {   
-            spawnSettings.doEaseIn(transform, entity != null);   
-            if(transform.localScale.sqrMagnitude <= 0){ Destroy(gameObject); } // Deletes itself  
+            spawnSettings.Scale(transform, entity != null);
+            if(transform.localScale.sqrMagnitude <= 0){ Destroy(gameObject); } // Deletes itself
             
             if(!entity){ return; }
             transform.position = GetEntityPosition();        
@@ -120,22 +126,17 @@ namespace AstralCandle.Entity{
         }
     
         [Serializable] public sealed class Spawn{
-            public AnimationCurve animation;
-            public float duration = 0.5f;
+            public AnimationInterpolation animationSettings;
             [HideInInspector] public Vector3 cachedScale;
-
-            float elapsedTime = 0;
 
             /// <summary>
             /// Adds a bit of flare to spawning the selection circle in
             /// </summary>
             /// <param name="obj">This transform</param>
             /// <param name="easeIn">Are we spawning in this object?</param>
-            public void doEaseIn(Transform obj, bool easeIn){
-                elapsedTime += (easeIn)? Time.deltaTime: -Time.deltaTime;
-                elapsedTime = Mathf.Clamp(elapsedTime, 0, duration);
-
-                obj.localScale = Vector3.Lerp(Vector3.zero, cachedScale, animation.Evaluate(Mathf.Clamp01(elapsedTime / duration)));
+            public void Scale(Transform obj, bool easeIn){
+                float value = animationSettings.Play(!easeIn);
+                obj.localScale = Vector3.LerpUnclamped(Vector3.zero, cachedScale, value);
             }
         }
         [Serializable] public sealed class Oscillation{
@@ -144,11 +145,8 @@ namespace AstralCandle.Entity{
         [Serializable] public sealed class Circle{
             public GameObject circle;
             public Image[] bars, delayedBars;
-            [SerializeField, Tooltip("The animation the circle will take when updating")] AnimationCurve animation;
-
-            [SerializeField, Tooltip("The time it takes to update")] float barUpdateDuration = 0.5f;
+            [SerializeField] AnimationInterpolation animationSettings;
             [SerializeField, Tooltip("How responsive is the delayed bar to match the main bar?")] float delayedBarSmoothing = 0.1f;
-            float elapsedTime;
 
             float _percent;
             /// <summary>
@@ -158,7 +156,7 @@ namespace AstralCandle.Entity{
                 get => _percent;
                 set{
                     if(value != _percent){ 
-                        elapsedTime = 0; 
+                        animationSettings.ResetTime();
                         previousBarLerp = barLerp;
                     }
                     _percent = value;
@@ -173,12 +171,9 @@ namespace AstralCandle.Entity{
             /// <param name="instant">If true will instantly teleport the bars to a given point</param>
             public void UpdateBar(bool instant = false){
                 if(instant){ previousBarLerp = percent / bars.Length; }
+                float value = animationSettings.Play();
 
-                elapsedTime += Time.deltaTime;
-                float barPercentTime = Mathf.Clamp01(elapsedTime / barUpdateDuration); 
-                barPercentTime = animation.Evaluate(barPercentTime);
-
-                barLerp = Mathf.LerpUnclamped(previousBarLerp, percent / bars.Length, barPercentTime);
+                barLerp = Mathf.LerpUnclamped(previousBarLerp, percent / bars.Length, value);
                 delayedFill = Mathf.SmoothDamp(delayedFill, barLerp, ref delayedVelocity, (instant || barLerp > delayedFill)? 0: delayedBarSmoothing);
                 
                 for(int i = 0; i < bars.Length; i++){

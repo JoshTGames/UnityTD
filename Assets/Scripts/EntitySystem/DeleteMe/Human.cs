@@ -3,25 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using AstralCandle.Entity;
 using System;
-public class Tsawdadasda : EntityCharacter{
+public class Human : EntityCharacter{
     [SerializeField, Tooltip("Dictates how far this character leans when moving")] float leanFactor = 10f;
     [SerializeField] float smoothing = 0.1f;
-    Animator animator;
 
     Quaternion prvLookDirection;
     Vector3 lookDirection, lookVelocity;
 
 
-    public Tsawdadasda(int ownerId) : base(ownerId){}
+    public Human(int ownerId) : base(ownerId){}
 
     #region HIDE
     protected override void OnDamage(){}
-    protected override void OnDeath(){}
     protected override void OnHeal(){}
     protected override void OnImmortalHit(){}
     #endregion
 
-    void ManageMovement() => animator.Play((entityTask != null)? "Walk" : "Idle");
+    bool tst;
+    void ManageMovement() => AnimState = (entityTask != null)? WALK : IDLE; 
 
     void ManageLean(){
         lookDirection = Vector3.SmoothDamp(lookDirection, (entityTask != null)? entityTask.moveDirection : Vector3.zero, ref lookVelocity, smoothing);
@@ -34,13 +33,9 @@ public class Tsawdadasda : EntityCharacter{
         transform.rotation = lookRot * Quaternion.Euler(lean);
     }
 
-    private void LateUpdate() {
+    protected override void LateUpdate() {
+        base.LateUpdate();
         ManageMovement();        
         ManageLean();
-    }
-
-    protected override void Start(){
-        base.Start();
-        animator = GetComponentInChildren<Animator>();
     }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using AstralCandle.Animation;
 using TMPro;
 
 /*
@@ -11,16 +12,13 @@ public class ProgressBar : MonoBehaviour{
     public static ProgressBar instance;
 
     [Header("Progress Settings")]
-    [SerializeField] AnimationCurve curve;
+    [SerializeField] AnimationInterpolation animationSettings;
     [SerializeField] Image bar, delayedBar;
     [SerializeField] TMP_Text state, value;
-    [SerializeField] float updateDuration = 1f;
     [SerializeField, Range(0, 1)] float delayedSmoothing;
 
     Animator _animator;
-    bool shakeBar = false;
-
-    float elapsedTime, smoothVelocity;
+    float smoothVelocity;
     float _targetValue = 0, previousValue = 0;
     float TargetValue{
         get => _targetValue;
@@ -28,7 +26,7 @@ public class ProgressBar : MonoBehaviour{
             if(value == _targetValue){ return; }
             previousValue = _targetValue;
             _targetValue = value;
-            elapsedTime = 0;
+            animationSettings.ResetTime();
         }
     }
 
@@ -38,7 +36,6 @@ public class ProgressBar : MonoBehaviour{
     public void UpdateTarget(float value){
         if(value == TargetValue){ return; }
         TargetValue = value;
-        shakeBar = true;
     }
     /// <summary>
     /// Updates the colour of the bar 
@@ -67,23 +64,13 @@ public class ProgressBar : MonoBehaviour{
     }
 
     void UpdateProgress(){
-        elapsedTime += Time.deltaTime;
-        float progress = Mathf.Clamp01(elapsedTime / updateDuration);
-        float animation = curve.Evaluate(progress);
+        float value = animationSettings.Play();
 
-        bar.fillAmount = Mathf.LerpUnclamped(previousValue, TargetValue, animation);
+        bar.fillAmount = Mathf.LerpUnclamped(previousValue, TargetValue, value);
         delayedBar.fillAmount = Mathf.SmoothDamp(delayedBar.fillAmount, bar.fillAmount, ref smoothVelocity, delayedSmoothing);
-
-        if(progress >= 1 && shakeBar){
-            shakeBar = false;
-            _animator.SetTrigger("CircleShake");
-        }
     }
 
-    void LateUpdate() {
-        UpdateProgress();
-    }
-
+    void LateUpdate() => UpdateProgress();
     private void Awake() => instance = this;
     private void Start() => _animator = GetComponent<Animator>();
 }

@@ -657,40 +657,44 @@ MonoBehaviour:
   offset: 0.1
   smoothing: 0.05
   spawnSettings:
-    animation:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 0.7
-        value: 1.0048316
-        inSlope: -2.7838883
-        outSlope: -2.7838883
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.03955101
-        outWeight: 0.441773
-      - serializedVersion: 3
-        time: 1
-        value: 1
-        inSlope: -1.0585327
-        outSlope: -1.0585327
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.10747492
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    duration: 0.5
+    animationSettings:
+      curve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.7
+          value: 1.0048316
+          inSlope: -2.7838883
+          outSlope: -2.7838883
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.03955101
+          outWeight: 0.441773
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: -1.0585327
+          outSlope: -1.0585327
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.10747492
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      duration: 0.5
+      onComplete:
+        m_PersistentCalls:
+          m_Calls: []
     cachedScale: {x: 0, y: 0, z: 0}
   oscillationSettings:
     oscillationFrequency: 5
@@ -703,6 +707,44 @@ MonoBehaviour:
     delayedBars:
     - {fileID: 5828576435300546593}
     - {fileID: 5828576435245809190}
+    animationSettings:
+      curve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.7
+          value: 1.0048316
+          inSlope: -2.7838883
+          outSlope: -2.7838883
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.03955101
+          outWeight: 0.441773
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: -1.0585327
+          outSlope: -1.0585327
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.10747492
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      duration: 0.5
+      onComplete:
+        m_PersistentCalls:
+          m_Calls: []
     animation:
       serializedVersion: 2
       m_Curve:
@@ -746,6 +788,44 @@ MonoBehaviour:
     delayedBars:
     - {fileID: 5828576436574670388}
     - {fileID: 5828576437232963888}
+    animationSettings:
+      curve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.7
+          value: 1.0048316
+          inSlope: -2.7838883
+          outSlope: -2.7838883
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.03955101
+          outWeight: 0.441773
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: -1.0585327
+          outSlope: -1.0585327
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.10747492
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      duration: 0.01
+      onComplete:
+        m_PersistentCalls:
+          m_Calls: []
     animation:
       serializedVersion: 2
       m_Curve:
