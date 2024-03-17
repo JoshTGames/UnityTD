@@ -3,6 +3,10 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using AstralCandle.Entity;
 using AstralCandle.TowerDefence;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using AstralCandle.Animation;
 
 /*
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
@@ -21,10 +25,20 @@ public class PlayerControls : MonoBehaviour{
     [SerializeField] DragSettings dragSettings;
     [SerializeField] LayerMask entityMask, mapMask;
     [SerializeField] Collider map;
+    [SerializeField] float buildingPositioningSmoothing = 0.1f;
+    Vector3 buildingPositioningVelocity;
 
 
     public EntitySelection<Entity> entities;
     public int ownerId{ get => _ownerId; }
+    BuildSystem building;
+    BuildSystem Building{
+        get => building;
+        set{
+            if(building != null && building.Entity != null){ Destroy(building.Entity.gameObject); }
+            building = value;
+        }
+    }
 
     Camera cam;
 
@@ -59,12 +73,21 @@ public class PlayerControls : MonoBehaviour{
     Rect selectionBox;
     #endregion
 
+    RaycastHit worldPoint; // Used so we dont have to recalculate the hit point every frame
     Vector3 _cursorPosition, previousCursorPosition;
     public Vector3 cursorPosition{
         get => _cursorPosition;
         private set{
             previousCursorPosition = _cursorPosition;
             _cursorPosition = value;
+            RaycastHit hit = GetWorldRay();
+            worldPoint = (hit.collider)? hit : worldPoint;
+
+            if(Building != null && !IsPivoting){
+                Building?.SetPosition(worldPoint);
+                entities.hovered = null;
+                return;
+            }
             entities.hovered = (selectStartPosition == null && !IsPivoting)? entities.PositionOverEntity(value, entityMask): null;
             if(entities.hovered == null){ EntityTooltip.instance.tooltip = null; } // Should hopefully stop glitching where text stays active
 
@@ -91,6 +114,17 @@ public class PlayerControls : MonoBehaviour{
 
         return Mathf.Max(width, height) * .5f;
     }
+    
+    /// <summary>
+    /// Shoots a raycast from the camera to the world
+    /// </summary>
+    /// <returns>The ray which hits the world</returns>
+    RaycastHit GetWorldRay(){
+        Ray ray = cam.ScreenPointToRay(cursorPosition);
+        Physics.Raycast(ray, out RaycastHit hit, cam.farClipPlane, mapMask);
+        return hit;
+    }
+
 
     /// <summary>
     /// Calculates the position to focus on when zooming in
@@ -98,13 +132,19 @@ public class PlayerControls : MonoBehaviour{
     /// <param name="safePosition">The position to fall back on if a new position can be found</param>
     /// <returns>The position the player is wanting to zoom in on</returns>
     Vector3 GetPeakPosition(Vector3 safePosition){
-        Ray ray = cam.ScreenPointToRay(cursorPosition);
-        RaycastHit hit;
-        Physics.Raycast(ray, out hit, cam.farClipPlane, mapMask);
-        if(!hit.collider){ return safePosition; }
-        Vector3 dir = hit.point - map.transform.position;
+        if(!worldPoint.collider){ return safePosition; }
+        Vector3 dir = worldPoint.point - map.transform.position;
 
         return map.transform.position + dir * .5f;
+    }
+
+    Entity StructureSpawnOccupant(IHousing house, Collider collider, Vector3 targetPosition){
+        house.RemoveOccupant(out Entity occupant);
+        Vector3 spawnPos = collider.ClosestPoint(targetPosition);
+        Bounds colBounds = occupant.GetComponent<Collider>().bounds;
+        spawnPos.y = colBounds.center.y + (colBounds.extents.y/2) - 0.25f;
+        occupant.transform.position = spawnPos;
+        return occupant;
     }
 
     private void LateUpdate(){
@@ -115,6 +155,10 @@ public class PlayerControls : MonoBehaviour{
         cam.orthographicSize = Mathf.SmoothDamp(cam.orthographicSize, newSize, ref zoomVelocity, zoomSmoothing);
         transform.parent.position = Vector3.SmoothDamp(transform.parent.position, peakPosition, ref peakVelocity, zoomSmoothing);
         transform.parent.rotation = Utilities.SmoothDampQuaternion(transform.parent.rotation, pivotRotation, ref pivotVelocity, zoomSmoothing);
+
+        if(Building != null){
+            Building.Entity.transform.position = Vector3.SmoothDamp(building.Entity.transform.position, building.Position, ref buildingPositioningVelocity, buildingPositioningSmoothing);
+        }        
     }
 
     private void Awake(){
@@ -129,7 +173,7 @@ public class PlayerControls : MonoBehaviour{
     public void OnShiftSelect(InputValue value) => shiftDown = value.Get<float>() > 0;
     public void OnAltSelect(InputValue value) => altDown = value.Get<float>() > 0;
     public void OnSelect(InputValue value){
-        if(IsPivoting){ return; }   
+        if(IsPivoting || building != null){ return; }   
         switch(value.Get<float>()){
             case 1: // Start                    
                 selectStartPosition = cursorPosition;
@@ -159,31 +203,72 @@ public class PlayerControls : MonoBehaviour{
     }
     public void OnAction(InputValue value){
         if(IsPivoting){ return; }
+        if(Building != null){ Building = null; }
         Camera cam = Camera.main;
 
         // Figure out task
+        List<Entity> selected = entities.selected.ToList();
         Entity hoveredEntity = entities.hovered as Entity; 
-        if(hoveredEntity){ // Trying to interact with another entity...
-            IHousing structure = hoveredEntity as IHousing;
-            
+        EntityResource selectedResource = hoveredEntity as EntityResource;
+        EntityResourceNode rSourceNode = hoveredEntity as EntityResourceNode;
+
+        if(hoveredEntity && !selectedResource && !rSourceNode){ // Trying to interact with another entity...
+            IHousing structure = hoveredEntity as IHousing;            
+
             // If not structure or we dont own it...
             if(structure == null || hoveredEntity.OwnerId != ownerId){ return; }
+            IStorage storage = hoveredEntity as IStorage;
 
             // Iterate through each of our selected characters and query the structure
-            foreach(Entity e in entities.selected){
+            for(int i = selected.Count-1; i >=0; i--){
+                Entity e = selected[i];
+                if(e.OwnerId != ownerId){ continue; } // Stops non-player-owned characters being controlled
+
                 ITask entity = e as ITask;
-                if(entity == null || e.OwnerId != ownerId){ continue; } // If not a character or is not owned by the player...
-                
-                switch(structure.AddOccupant(e)){
-                    case EntityERR.SUCCESS:
-                        Destroy(e.gameObject);
-                        break;
-                    case EntityERR.NOT_IN_RANGE:
-                        entity.SetTask(hoveredEntity.transform.position, () => structure.AddOccupant(e));
-                        break;
+                IHousing eHouse = e as IHousing;
+                if(entity == null && eHouse == null){ continue; }       
+                else if(entity == null && eHouse != null && eHouse.GetEfficiency() >0){                    
+                    entity = StructureSpawnOccupant(eHouse, e._collider, hoveredEntity.transform.position) as ITask;
+                    if(!shiftDown){ entities.Deselect(e); }
                 }
+                
+                if(entity == null){ continue; }
+                // Picking up a resource
+                IPickup pickup = entity as IPickup;                
+                
+                // Depositing Resources
+                ResourceData.Resource resourceData = pickup?.GetEquipped();
+                if (storage != null && pickup != null && resourceData != null){
+                    entity.SetTask(hoveredEntity.transform.position, () => storage.Deposit(resourceData, pickup));                    
+                    continue;
+                }
+                else if(resourceData == null){
+                    // Entering a structure
+                    entity.SetTask(hoveredEntity.transform.position, () => structure.AddOccupant(entity as Entity));
+                }
+                (entity as Human).TargetResource = null;
             }
-        }                
+        }            
+        else if(rSourceNode){
+            // Iterate through each of our selected characters
+            for(int i = selected.Count-1; i >=0; i--){
+                Entity e = selected[i];
+                if(e.OwnerId != ownerId){ continue; } // Stops non-player-owned characters being controlled
+
+                ITask entity = e as ITask;
+                IHousing eHouse = e as IHousing;
+                if(entity == null && eHouse == null){ continue; }       
+                else if(entity == null && eHouse != null && eHouse.GetEfficiency() >0){                    
+                    entity = StructureSpawnOccupant(eHouse, e._collider, hoveredEntity.transform.position) as ITask;
+                    if(!shiftDown){ entities.Deselect(e); }
+                }
+                
+                if(entity == null){ continue; }
+                
+                // Entering a structure
+                (entity as Human).TargetResource = rSourceNode;
+            }
+        }    
         else{ // SetTask to cursor
             // Stops raycasts being calculated if nothing is selected
             if(entities.selected.Count <= 0){ return; }
@@ -193,13 +278,26 @@ public class PlayerControls : MonoBehaviour{
             RaycastHit hit;
             if(!Physics.Raycast(ray, out hit, cam.farClipPlane, mapMask)){ return; }
 
-            foreach(Entity e in entities.selected){
-                ITask entity = e as ITask;                    
+            
+            for(int i = selected.Count-1; i >=0; i--){
+                Entity e = selected[i];
+                if(e.OwnerId != ownerId){ continue; } // Stops non-player-owned characters being controlled
+                
+                
+                ITask entity = e as ITask;             
+                IHousing eHouse = e as IHousing;
+                if(entity == null && eHouse == null){ continue; }       
+                else if(entity == null && eHouse != null && eHouse.GetEfficiency() >0){                    
+                    entity = StructureSpawnOccupant(eHouse, e._collider, hit.point) as ITask;
+                    if(!shiftDown){ entities.Deselect(e); }
+                }
+
                 if(!e || e.OwnerId != ownerId || entity == null){ continue; } // If not a character or is not owned by the player...
 
                 // Set targetPosition in character(s)
-                Vector3 pos = new Vector3(hit.point.x, e.transform.position.y, hit.point.z);
+                Vector3 pos = new(hit.point.x, e.transform.position.y, hit.point.z);
                 entity.SetTask(pos);
+                (entity as Human).TargetResource = null;
             }
         }          
     }
@@ -217,6 +315,12 @@ public class PlayerControls : MonoBehaviour{
         Quaternion pitchRot = Quaternion.AngleAxis(pitch, Vector3.up);
         // Quaternion yawRot = Quaternion.AngleAxis(yaw, transform.right);
         pivotRotation = Quaternion.Normalize(pitchRot);
+    }
+    [SerializeField] Entity tstStructure;
+    
+    public void OnBuild(InputValue value){
+        Building = new BuildSystem(Instantiate(tstStructure, worldPoint.point, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform), worldPoint);
+        entities.DeselectAll();
     }
     [System.Serializable] public class DragSettings{
         [SerializeField, Tooltip("The UI visual element")] Image dragUI;

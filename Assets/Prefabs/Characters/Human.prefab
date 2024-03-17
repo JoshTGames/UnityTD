@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1578573789}
   - component: {fileID: 1578573791}
   - component: {fileID: 1578573790}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: WalkFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4933,13 +4933,90 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: Human
   _description: Friendly
+  spawnSettings:
+    animationSettings:
+      curve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.7
+          value: 1.0048316
+          inSlope: -2.7838883
+          outSlope: -2.7838883
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.03955101
+          outWeight: 0.441773
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: -1.0585327
+          outSlope: -1.0585327
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.10747492
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      duration: 0.5
+      onComplete:
+        m_PersistentCalls:
+          m_Calls: []
+    cachedScale: {x: 0, y: 0, z: 0}
   showDebug: 0
   _ownerId: 0
+  meshRenderer: {fileID: 3666201109053331511}
+  selectionCircleYOffset: 0
+  isEnabled: 0
   immortal: 0
-  maxHealth: 100
+  maxHealth: 10
   _resistances: 
+  hitAnimationSettings:
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: -1.0011379
+        outSlope: -1.0011379
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: -0.001137876
+        inSlope: -1.0011379
+        outSlope: -1.0011379
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    duration: 0.25
+    onComplete:
+      m_PersistentCalls:
+        m_Calls: []
+  damagePopupObject: {fileID: 5407649736585778794, guid: aa0860f85e6620a4c83ca99de8d7b156,
+    type: 3}
+  hitColour: {r: 5.3403134, g: 0, b: 0, a: 1}
+  healColour: {r: 0.20787686, g: 3.3531437, b: 0.3979755, a: 1}
+  dropSettings: []
   moveSpeed: 5
-  interactRadius: 1
+  interactRadius: 1.25
   aISettings:
     steeringObstacles:
       serializedVersion: 2
@@ -4952,6 +5029,10 @@ MonoBehaviour:
     deltaDistanceToTarget: 0.1
   leanFactor: 10
   smoothing: 0.15
+  resourceLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  harvestCooldown: 1
 --- !u!1 &3666201109053331508
 GameObject:
   m_ObjectHideFlags: 0
@@ -5015,7 +5096,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2ce0f2a8445278642a7c3073a6970c80, type: 2}
+  - {fileID: 2100000, guid: c16a143f70c0d474686e512086a83e02, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

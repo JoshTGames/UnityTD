@@ -63,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 6e9e25ccf8c65334e9597467b92b1c01, type: 2}
+  - {fileID: 2100000, guid: 2011204430f3a9f42ab5c6d71c4013fa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -223,9 +223,52 @@ MonoBehaviour:
     cachedScale: {x: 0, y: 0, z: 0}
   showDebug: 0
   _ownerId: 1
+  meshRenderer: {fileID: 6038716991805624217}
+  selectionCircleYOffset: 0
+  isEnabled: 0
   immortal: 0
-  maxHealth: 100
+  maxHealth: 20
   _resistances: 
+  hitAnimationSettings:
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: -1.0011379
+        outSlope: -1.0011379
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: -0.001137876
+        inSlope: -1.0011379
+        outSlope: -1.0011379
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    duration: 0.25
+    onComplete:
+      m_PersistentCalls:
+        m_Calls: []
+  damagePopupObject: {fileID: 5407649736585778794, guid: aa0860f85e6620a4c83ca99de8d7b156,
+    type: 3}
+  hitColour: {r: 4, g: 0, b: 0, a: 1}
+  healColour: {r: 0.20787686, g: 3.3531437, b: 0.3979755, a: 1}
+  dropSettings:
+  - resource: {fileID: 7913039039796772101, guid: a56a7fa24eea5d844813fa3cb296a95c,
+      type: 3}
+    chanceToDrop: 0.9
+    quantity:
+      min: 1
+      max: 2
   moveSpeed: 2
   interactRadius: 5
   aISettings:
@@ -235,8 +278,8 @@ MonoBehaviour:
     steeringCircleResolution: 16
     steeringCircleRadius: 2
     steeringCircleYOffset: -0.5
-    extraInterest: 1
-    dangerMultiplier: 5
+    extraInterest: 0
+    dangerMultiplier: 2
     deltaDistanceToTarget: 0.1
   entityLayer:
     serializedVersion: 2

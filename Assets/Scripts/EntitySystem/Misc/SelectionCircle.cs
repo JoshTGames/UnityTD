@@ -34,6 +34,8 @@ namespace AstralCandle.Entity{
         [SerializeField] Oscillation oscillationSettings;
         [SerializeField] Circle healthCircle, attackCircle;
 
+        [HideInInspector] public float extraYOffset;
+
         IHealth health;
         IAttack attack;
 
@@ -87,7 +89,7 @@ namespace AstralCandle.Entity{
 
 
         Vector3 GetPosition(){
-            return _collider.bounds.center - new Vector3(0, _collider.bounds.extents.y) + new Vector3(0, _collider.bounds.size.y) * offset;
+            return _collider.bounds.center - new Vector3(0, _collider.bounds.extents.y) + new Vector3(0, _collider.bounds.size.y) * (offset + extraYOffset);
         }
 
         /// <summary>
@@ -98,7 +100,7 @@ namespace AstralCandle.Entity{
             healthCircle.circle.SetActive(health != null);
             
             // Attack
-            bool hasAttack = entity.OwnerId == PlayerControls.instance.ownerId && attack != null;
+            bool hasAttack = entity.OwnerId == PlayerControls.instance?.ownerId && attack != null;
             attackCircle.circle.SetActive(hasAttack);        
         }
 

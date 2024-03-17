@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System.Threading.Tasks;
+using AstralCandle.Animation;
+using System;
 
 /*
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
@@ -17,6 +19,12 @@ namespace AstralCandle.Entity{
         [SerializeField, Tooltip("If true, will stop this entity from being inflicted by damage")] bool immortal;
         [SerializeField, Tooltip("The max health this entity can have")] int maxHealth;
         [SerializeField, Tooltip("Any resistances here will reduce incoming damage and stop the infliction being added")] List<IHealth.InflictionType> _resistances;
+        [SerializeField] AnimationInterpolation hitAnimationSettings;
+        [SerializeField] DamagePopup damagePopupObject;
+        [ColorUsage(true, hdr:true)]
+        [SerializeField] Color hitColour = Color.white, healColour = Color.green;      
+        [SerializeField] DropSettings[] dropSettings; 
+
 
         /// <summary>
         /// The resistances this entity has. (This is the '_resistances' variable, converted into a hashset)
@@ -31,17 +39,21 @@ namespace AstralCandle.Entity{
         int Health{
             get => _health;
             set{
+                if(isDead){ return; }
+                
                 int newHp = Mathf.Clamp(value, 0, maxHealth);
                 if(immortal){
                     OnImmortalHit();
                     return;
                 }
                 else if(newHp <= 0){ OnDeath(); }
-                else if(newHp < _health){ OnDamage(); }
-                else if(newHp > _health){ OnHeal(); }
+                else if(newHp < _health){ OnDamage(_health - newHp); }
+                else if(newHp > _health){ OnHeal(newHp - _health); }
                 _health = newHp;
             }
         }
+
+        protected bool isDead;
 
 
         protected EntityHealth(int ownerId) : base(ownerId){}
@@ -85,13 +97,70 @@ namespace AstralCandle.Entity{
             base.Start();
             _health = maxHealth;
             resistances = _resistances.ToHashSet();            
+            hitAnimationSettings.ResetTime(true);
         }
 
+        protected override void LateUpdate(){
+            base.LateUpdate();
+            float value = hitAnimationSettings.Play();
+            meshRenderer.material.SetFloat("_Opacity", value);
+            meshRenderer.transform.localScale -= (Vector3.one * 0.25f) * value;
+        }
 
         //--- Abstract functions
         protected abstract void OnImmortalHit();
-        protected virtual void OnDeath() => DestroyEntity();
-        protected abstract void OnDamage();
-        protected abstract void OnHeal();
+        protected virtual void OnDeath(){
+            if(isDead){ return; }
+            isDead = true;
+
+            DestroyEntity();
+
+            // Drops
+            for(int i = 0; i < dropSettings.Length; i++){
+                DropSettings drop = dropSettings[i];
+                float dice = UnityEngine.Random.Range(0f, 1f);
+                bool doSpawnDrop = dice <= drop.chanceToDrop;
+                if(!doSpawnDrop){ continue; }
+
+                float rndX = UnityEngine.Random.Range(-_collider.bounds.extents.x, _collider.bounds.extents.x);
+                float rndZ = UnityEngine.Random.Range(-_collider.bounds.extents.z, _collider.bounds.extents.z);
+                Vector3 startPos = _collider.bounds.center + new Vector3(rndX, -_collider.bounds.extents.y, rndZ);
+
+                int quantityToDrop = UnityEngine.Random.Range(drop.quantity.min, drop.quantity.max);
+                EntityResource r = Instantiate(drop.resource, startPos, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform);
+                r.transform.position += new Vector3(0, r.GetComponent<Collider>().bounds.extents.y);
+                r.quantity = quantityToDrop;
+            }
+        }
+        protected virtual void OnDamage(int value){ 
+            meshRenderer.material.SetColor("_FlashColour", hitColour);
+            hitAnimationSettings.ResetTime();
+
+            float rndX = UnityEngine.Random.Range(-_collider.bounds.extents.x, _collider.bounds.extents.x);
+            float rndZ = UnityEngine.Random.Range(-_collider.bounds.extents.z, _collider.bounds.extents.z);
+            Vector3 startPos = _collider.bounds.center + new Vector3(rndX, _collider.bounds.extents.y, rndZ);
+
+            DamagePopup dmgPopup = Instantiate(damagePopupObject, startPos, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform);
+            dmgPopup.SetText($"-{value}");
+            dmgPopup.SetColour((OwnerId != PlayerControls.instance.ownerId)? Color.white : hitColour);
+        }
+        protected virtual void OnHeal(int value){ 
+            meshRenderer.material.SetColor("_FlashColour", healColour);
+            hitAnimationSettings.ResetTime();
+
+            float rndX = UnityEngine.Random.Range(-_collider.bounds.extents.x, _collider.bounds.extents.x);
+            float rndZ = UnityEngine.Random.Range(-_collider.bounds.extents.z, _collider.bounds.extents.z);
+            Vector3 startPos = _collider.bounds.center + new Vector3(rndX, _collider.bounds.extents.y, rndZ);
+
+            DamagePopup dmgPopup = Instantiate(damagePopupObject, startPos, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform);
+            dmgPopup.SetText($"+{value}");
+            dmgPopup.SetColour(healColour);
+        }
+
+        [Serializable] public class DropSettings{
+            public EntityResource resource;
+            [Range(0, 1)] public float chanceToDrop;
+            public Utilities.MinMax quantity = new(0, 0);
+        }
     }
 }

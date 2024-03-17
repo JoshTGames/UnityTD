@@ -40,7 +40,7 @@ public class Orc : EntityCharacter, IAttack, IWave{
     public Orc(int ownerId) : base(ownerId){}
 
 
-    void ManageMovement() => AnimState = (entityTask != null)? WALK : IDLE; 
+    void ManageMovement() => AnimState = (entityTask != null && entityTask.moveDirection != Vector3.zero)? WALK : IDLE; 
 
     void ManageLean(){
         lookDirection = Vector3.SmoothDamp(lookDirection, (entityTask != null)? entityTask.moveDirection : Vector3.zero, ref lookVelocity, smoothing);
@@ -64,7 +64,7 @@ public class Orc : EntityCharacter, IAttack, IWave{
     /// </summary>
     /// <param name="other">The position of the entity we want to attack</param>
     /// <returns>True/False depending on if the entity is within attacking range</returns>
-    protected bool InRange(Vector3 other) => Vector3.Distance(transform.position, other) <= attackRadius;
+    protected bool InRange(Vector3 other) => Vector3.Distance(_collider.ClosestPoint(other), other) <= attackRadius;
 
     /// <summary>
     /// Searches for enemies within attack range of this entity
@@ -76,7 +76,7 @@ public class Orc : EntityCharacter, IAttack, IWave{
         Collider[] entities = Physics.OverlapSphere(transform.position, GetInteractRadius(), entityLayer);
         foreach(Collider col in entities){
             EntityCharacter eC = col.GetComponent<EntityCharacter>();
-            if(!eC || eC.OwnerId == OwnerId){ continue; }
+            if(!eC || eC.OwnerId == OwnerId || eC.MarkedForDestroy || !eC.isEnabled){ continue; }
             else if(entity == null){ 
                 entity = eC; 
                 continue;
@@ -97,20 +97,20 @@ public class Orc : EntityCharacter, IAttack, IWave{
         entity = plrStructures[0];
         for(int i = 0; i < plrStructures.Count; i++){
             EntityStructure pS = plrStructures[i];
-
+            if(pS.MarkedForDestroy || !pS.isEnabled){ continue; }
             float aDist = Vector3.Distance(transform.position, pS.transform.position);
             float bDIst = Vector3.Distance(transform.position, entity.transform.position);
             if(aDist < bDIst){ entity = pS; }
         }
         #endregion
-        return entity;
+        return (entity.isEnabled)? entity: null;
     }
 
 
     public virtual EntityERR Attack(EntityHealth entity, bool ignoreCooldown = false){
         Vector3 range = entity._collider.ClosestPoint(transform.position);
 
-        if(!entity){ return EntityERR.INVALID_CALL; }
+        if(!entity || entity.MarkedForDestroy){ return EntityERR.INVALID_CALL; }
         else if(OwnerId == entity.OwnerId){ return EntityERR.IS_FRIENDLY; }
         else if(!InRange(range)){ return EntityERR.NOT_IN_RANGE; }
         else if(elapsedTime > 0 && !ignoreCooldown){ return EntityERR.UNDER_COOLDOWN; }
@@ -124,12 +124,11 @@ public class Orc : EntityCharacter, IAttack, IWave{
     public float GetCooldown() => Mathf.Clamp01(elapsedTime / cooldown);
 
 
-    protected override void OnDamage(){}
-    protected override void OnHeal(){}
+    
     protected override void OnImmortalHit(){}
 
 
-    protected override void Run(){        
+    public override void Run(){        
         elapsedTime -= Time.fixedDeltaTime;
         Target = FindEnemy();
         if(!Target){ return; }

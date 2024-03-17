@@ -21,6 +21,10 @@ namespace AstralCandle.Animation{
             set => _elapsedTime = Mathf.Clamp(value, 0, duration);
         }
         bool callEvent;
+        public float percent{
+            get;
+            private set;
+        }
 
         public AnimationInterpolation(AnimationCurve curve, float duration){
             this.curve = curve;
@@ -41,7 +45,7 @@ namespace AstralCandle.Animation{
         /// <returns>The interpolated value</returns>
         public float Play(bool reverse = false){
             ElapsedTime += (!reverse)? Time.deltaTime : -Time.deltaTime;
-            float percent = Mathf.Clamp01(ElapsedTime / duration);
+            percent = Mathf.Clamp01(ElapsedTime / duration);
 
             if((percent == 1 || percent == 0) && callEvent){ 
                 onComplete?.Invoke(); 

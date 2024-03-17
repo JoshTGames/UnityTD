@@ -14,6 +14,7 @@ using AstralCandle.Animation;
 public class GameLoop : MonoBehaviour{    
     public static GameLoop instance;
     [HideInInspector] public List<EntityStructure> playerStructures = new();
+    [HideInInspector] public List<Entity> allEntities = new();
     
     #region EDITOR VARIABLES
     [SerializeField] bool showDebug;
@@ -76,6 +77,13 @@ public class GameLoop : MonoBehaviour{
     }
 
     void NewGame() => CurrentGame = new Game(waves[Wave], map.position, MapScale, (Wave + 1).ToString());
+
+    // RUNS ALL ENTITIES
+    private void FixedUpdate() {
+        for(int i = allEntities.Count-1; i > -1; i--){
+            allEntities[i].Run();
+        }
+    }
 
     void Awake() => instance = this;
 

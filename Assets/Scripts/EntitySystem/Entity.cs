@@ -17,19 +17,28 @@ namespace AstralCandle.Entity{
         [SerializeField] Spawning spawnSettings;
         [SerializeField, Tooltip("If true, will show all debugging gizmos associated to this entity")] bool showDebug;
 
-        [SerializeField] int _ownerId = -1; // -1 means it is not owned
+        [SerializeField, Tooltip("The owner of this entity (-1 means it is not owned)")] int _ownerId = -1; // -1 means it is not owned
+        [SerializeField, Tooltip("Used for animation")] protected Renderer meshRenderer;
+        [SerializeField, Tooltip("Adding offset means the selection circle will show higher than normal")] float selectionCircleYOffset = 0;
 
         /// <summary>
         /// The owner of this entity
         /// </summary>
         public int OwnerId{ get => _ownerId; }
+        public Material Material{ get => meshRenderer.material; }
         public Collider _collider{
             get;
             private set;
         }
-
+        
+        public bool isEnabled = true;
         SelectionCircle selectionObject;
-        bool isDestroyed = false, isHovered = false, easeIn = true;
+        bool isDestroyed = false, isHovered = false;
+
+        public bool MarkedForDestroy{
+            get;
+            private set;
+        } = true;
 
         public Entity(int ownerId) => this._ownerId = ownerId;
 
@@ -40,7 +49,7 @@ namespace AstralCandle.Entity{
         public virtual string GetDescription() => _description;
 
 
-        public void OnIsHovered(bool isHovered){
+        public virtual void OnIsHovered(bool isHovered){
             this.isHovered = isHovered;
             EntityTooltip.instance.tooltip = (isHovered)? new EntityTooltip.Tooltip(_name, _description): null;
         }
@@ -50,6 +59,7 @@ namespace AstralCandle.Entity{
             if(obj){ 
                 if(!selectionObject){
                     selectionObject = Instantiate(obj, transform.position, obj.transform.rotation, GameObject.Find("_GAME_RESOURCES_")?.transform); 
+                    selectionObject.extraYOffset = selectionCircleYOffset;
                 }
                 selectionObject.entity = this;
             }
@@ -61,22 +71,24 @@ namespace AstralCandle.Entity{
 
         public bool IsDestroyed() => isDestroyed;
         
-        protected void DestroyEntity() => easeIn = false;
+        public void DestroyEntity() => MarkedForDestroy = true;
 
         /// <summary>
         /// Initialises this entity ready for running behaviour on
         /// </summary>
         protected virtual void Start(){
             PlayerControls.instance.entities.SubscribeToEntities(this);
+            GameLoop.instance.allEntities.Add(this);
             _collider = GetComponent<Collider>();
-            easeIn = true;
-            spawnSettings.cachedScale = transform.localScale;
+            MarkedForDestroy = false;
+            isEnabled = true;
+            spawnSettings.cachedScale = meshRenderer.transform.localScale;
         }
 
         protected virtual void LateUpdate(){
-            Vector3 scale = spawnSettings.Scale(transform, easeIn);
-            transform.localScale = scale * (isHovered? 1.1f : 1);
-            if(transform.localScale.sqrMagnitude <= 0){ Destroy(gameObject); } // Deletes itself
+            Vector3 scale = spawnSettings.Scale(meshRenderer.transform, !MarkedForDestroy);
+            meshRenderer.transform.localScale = scale * (isHovered? 1.1f : 1);
+            if(meshRenderer.transform.localScale.sqrMagnitude <= 0){ Destroy(gameObject); } // Deletes itself
         }
 
         protected virtual bool OnValidate(){
@@ -90,13 +102,15 @@ namespace AstralCandle.Entity{
         /// </summary>
         protected virtual void OnDestroy(){
             PlayerControls.instance.entities.SubscribeToEntities(this, true);
+            PlayerControls.instance.entities.selected.Remove(this);
+            GameLoop.instance.allEntities.Remove(this);
             isDestroyed = true;            
         }
 
         /// <summary>
         /// Called by a manager script (The main function which triggers the behaviour of this entity)
         /// </summary>
-        protected abstract void Run();
+        public abstract void Run();
 
         /// <summary>
         /// Used to display editor gizmos
@@ -112,10 +126,10 @@ namespace AstralCandle.Entity{
             /// Adds a bit of flare to spawning the selection circle in
             /// </summary>
             /// <param name="obj">This transform</param>
-            /// <param name="easeIn">Are we spawning in this object?</param>
+            /// <param name="MarkedForDestroy">Are we spawning in this object?</param>
             /// <returns>The interpolated scale</returns>
-            public Vector3 Scale(Transform obj, bool easeIn = true){
-                float value = animationSettings.Play(!easeIn);
+            public Vector3 Scale(Transform obj, bool MarkedForDestroy = true){
+                float value = animationSettings.Play(!MarkedForDestroy);
                 return Vector3.LerpUnclamped(Vector3.zero, cachedScale, value);
             }
         }

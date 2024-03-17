@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using AstralCandle.Animation;
 using AstralCandle.TowerDefence;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -20,17 +21,17 @@ namespace AstralCandle.Entity{
         [SerializeField] LayerMask entityLayer;
         [SerializeField] IHealth.InflictionType damageInfliction;
         [SerializeField] int damage = 5;
-        [SerializeField] float attackRadius = 2;
+        [SerializeField] protected float attackRadius = 2;
         [SerializeField] float projectileHeightOffset = 0;
         [SerializeField] float cooldown = 1;
         [SerializeField] GameObject projectile;
         [SerializeField] float projectileSpeed;
         [SerializeField] AnimationCurve easeInCurve;
         [SerializeField] float easeInDuration = 1;
+        [SerializeField] AnimationInterpolation attackAnimationSettings;
         
         List<Projectile> activeProjectiles;
         float elapsedTime;
-        protected bool isDead;
 
         protected EntityDefensiveStructure(int ownerId) : base(ownerId){}
 
@@ -40,7 +41,7 @@ namespace AstralCandle.Entity{
         /// </summary>
         /// <param name="other">The position of the entity we want to attack</param>
         /// <returns>True/False depending on if the entity is within attacking range</returns>
-        protected bool InRange(Vector3 other) => Vector3.Distance(transform.position, other) <= attackRadius;
+        protected bool InRange(Vector3 other, float radius) => Vector3.Distance(_collider.ClosestPoint(other), other) <= radius;
 
         /// <summary>
         /// Searches for enemies within attack range of this entity
@@ -53,18 +54,18 @@ namespace AstralCandle.Entity{
                 EntityHealth hE = col.GetComponent<EntityHealth>();
 
                 // Guard clause
-                if(!hE || hE.OwnerId == OwnerId){ continue; }
+                if(!hE || hE.OwnerId == OwnerId || hE.OwnerId < 0 || hE.MarkedForDestroy || !hE.isEnabled){ continue; }
                 enemies.Add(hE);
             }
             return enemies;
         }
 
         public virtual EntityERR Attack(EntityHealth entity, bool ignoreCooldown = false){
-            if(!entity){ return EntityERR.INVALID_CALL; }
-            if(GetEfficiency() <= 0){ return EntityERR.NO_OCCUPANTS; }
-            if(OwnerId == entity.OwnerId){ return EntityERR.IS_FRIENDLY; }
+            if(!entity || entity.MarkedForDestroy){ return EntityERR.INVALID_CALL; }
+            else if(GetEfficiency() <= 0){ return EntityERR.NO_OCCUPANTS; }
+            else if(OwnerId == entity.OwnerId){ return EntityERR.IS_FRIENDLY; }
             else if(elapsedTime > 0 && !ignoreCooldown){ return EntityERR.UNDER_COOLDOWN; }
-            else if(!InRange(entity.transform.position)){ return EntityERR.NOT_IN_RANGE; }
+            else if(!InRange(entity.transform.position, attackRadius)){ return EntityERR.NOT_IN_RANGE; }
 
             int calculatedDMG = Mathf.FloorToInt(damage * (1f / GetMaxOccupants()));
             entity.Damage(calculatedDMG, damageInfliction, this);
@@ -73,7 +74,7 @@ namespace AstralCandle.Entity{
 
         public float GetCooldown() => Mathf.Clamp01(elapsedTime / cooldown);
 
-        protected override void Run(){
+        public override void Run(){
             if(isDead && activeProjectiles.Count <= 0 && !IsDestroyed()){ 
                 DestroyEntity();
                 return; 
@@ -106,6 +107,7 @@ namespace AstralCandle.Entity{
             elapsedTime = cooldown;
 
             // Attacking
+            attackAnimationSettings.ResetTime();
             int occupants = GetOccupants();
             for(int i = 0; i < occupants; i++){
                 EntityHealth e = enemies[i % enemies.Count];
@@ -119,12 +121,16 @@ namespace AstralCandle.Entity{
             }
         }
 
-
-        protected override void OnDeath() => isDead = true;
-
         protected override void Start(){
             base.Start();
             activeProjectiles = new();
+            attackAnimationSettings.ResetTime();
+        }
+
+        protected override void LateUpdate(){
+            base.LateUpdate();
+            float value = attackAnimationSettings.Play();
+            meshRenderer.transform.localScale += (Vector3.one * .05f) * value;
         }
 
         protected override bool OnValidate() {

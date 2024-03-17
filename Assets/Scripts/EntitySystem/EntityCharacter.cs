@@ -37,7 +37,6 @@ namespace AstralCandle.Entity{
             get => _animState;
             set{
                 if(value == _animState){ return; }
-
                 animator.CrossFade(value, 0.1f, 0);
                 _animState = value;
             }
@@ -52,16 +51,18 @@ namespace AstralCandle.Entity{
         /// <returns>true/false</returns>
         bool CheckAndRemoveTask(EntityERR success){
             float dist = Vector3.Distance(entityTask.position, transform.position);
-            
-            if(Vector3.Distance(entityTask.position, transform.position) <= aISettings.deltaDistanceToTarget){ return true; }
+            if(dist <= aISettings.deltaDistanceToTarget){ return true; }
             else if(success != EntityERR.NOT_IN_RANGE && success != EntityERR.UNDER_COOLDOWN){ return true; } // If task was successful or not actionable, then remove it
             return false;
         }
 
-        public void SetTask(Vector3 position, Func<EntityERR> action = null) => entityTask = new Task(position, action);
+        public void SetTask(Vector3 position, Func<EntityERR> action = null){
+            position.y = transform.position.y;
+            entityTask = new Task(position, action);
+        }
         public float GetInteractRadius() => interactRadius;
         
-        protected override void Run(){
+        public override void Run(){
             if(entityTask != null){                
                 EntityERR success = entityTask.RunTask(transform.position, aISettings.deltaDistanceToTarget, steering);
                 
@@ -76,9 +77,6 @@ namespace AstralCandle.Entity{
         }
 
         //--- Base functions
-        // DELETE ME
-        private void FixedUpdate() => Run();
-
         protected override void Start(){
             base.Start();
             steering = new ContextSteering(aISettings.steeringCircleResolution, aISettings.steeringCircleRadius, aISettings.steeringObstacles, aISettings.extraInterest, aISettings.dangerMultiplier);
@@ -113,7 +111,7 @@ namespace AstralCandle.Entity{
 
             // Interact radius
             Handles.color = Color.white;
-            Handles.DrawWireDisc(transform.position, Vector3.up, interactRadius, 2f);
+            Handles.DrawWireDisc(_collider.bounds.center + new Vector3(0, -_collider.bounds.extents.y), Vector3.up, interactRadius, 2f);
             #endif
             return true;
         }
