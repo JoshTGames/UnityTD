@@ -75,6 +75,7 @@ namespace AstralCandle.Entity{
         public float GetCooldown() => Mathf.Clamp01(elapsedTime / cooldown);
 
         public override void Run(){
+            base.Run();
             if(isDead && activeProjectiles.Count <= 0 && !IsDestroyed()){ 
                 DestroyEntity();
                 return; 

@@ -14,6 +14,7 @@ namespace AstralCandle.Entity{
     public abstract class Entity : MonoBehaviour, ISelectable{
         [SerializeField, Tooltip("The name of this entity")] string _name;
         [SerializeField, TextArea, Tooltip("Information about this entity")] string _description;
+        [SerializeField, Tooltip("A visual way to show the player what this entity is")] Sprite[] entityAttributeIcons;
         [SerializeField] Spawning spawnSettings;
         [SerializeField, Tooltip("If true, will show all debugging gizmos associated to this entity")] bool showDebug;
 
@@ -33,7 +34,8 @@ namespace AstralCandle.Entity{
         
         public bool isEnabled = true;
         SelectionCircle selectionObject;
-        bool isDestroyed = false, isHovered = false;
+        bool isDestroyed = false;
+        protected bool isHovered = false;
 
         public bool MarkedForDestroy{
             get;
@@ -51,7 +53,7 @@ namespace AstralCandle.Entity{
 
         public virtual void OnIsHovered(bool isHovered){
             this.isHovered = isHovered;
-            EntityTooltip.instance.tooltip = (isHovered)? new EntityTooltip.Tooltip(_name, _description): null;
+            EntityTooltip.instance.tooltip = (isHovered)? new EntityTooltip.Tooltip(_name, _description, entityAttributeIcons): null;
         }
 
         public void OnIsSelected(SelectionCircle obj){

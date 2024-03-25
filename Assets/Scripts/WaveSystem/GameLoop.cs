@@ -28,9 +28,12 @@ public class GameLoop : MonoBehaviour{
     #endregion
     #region PRIVATE VARIABLES
     const int NUMBER_OF_SPAWN_DIRECTIONS = 4; // UP, DOWN, LEFT, RIGHT
+    readonly int[] RESOURCE_NODE_DIRECTIONS = new int[4]{0, 90, 180, 270};
     int _wave = 0;
     
-    float _mapScale;
+    float _mapScale, previousMapScale;    
+    #endregion
+
     public float MapScale{
         get => _mapScale;
         private set{
@@ -41,9 +44,6 @@ public class GameLoop : MonoBehaviour{
             targetScale = new(value, map.localScale.y, value);
         } 
     }
-    #endregion
-
-    
     
     /// <summary>
     /// The concurrent wave we are on
@@ -76,7 +76,48 @@ public class GameLoop : MonoBehaviour{
         map.localScale = Vector3.LerpUnclamped(previousScale, targetScale, value);
     }
 
-    void NewGame() => CurrentGame = new Game(waves[Wave], map.position, MapScale, (Wave + 1).ToString());
+    void NewGame(){
+        CurrentGame = new Game(waves[Wave], map.position, MapScale, (Wave + 1).ToString());
+
+        // Calculate resource spawning locations
+        HashSet<Vector3> resourceSpawnLocations = new();
+        int maxMapSize = (int)Grid.RoundToGrid(MapScale / 2, settings.cellSize) - settings.cellSize;
+        int minMapSize = (int)Grid.RoundToGrid(previousMapScale / 2, settings.cellSize);
+        for(int i = minMapSize; i < maxMapSize; i += settings.cellSize){
+            for(int x = -i; x < i; x+= settings.cellSize){
+                resourceSpawnLocations.Add(new(x, 0, i));
+                resourceSpawnLocations.Add(new(-x, 0, -i));
+            }
+            for(int z = -i; z < i; z+= settings.cellSize){
+                resourceSpawnLocations.Add(new(i, 0, z));
+                resourceSpawnLocations.Add(new(-i, 0, z));
+            }
+        }
+        // Spawn resources
+        Transform parentFolder = GameObject.Find("_GAME_RESOURCES_").transform;
+
+        System.Random random = new();
+        List<Vector3> rLocations = resourceSpawnLocations.OrderBy(e => random.NextDouble()).ToList();
+        int locationIndex = 0;
+        foreach(ResourceSettings resource in settings.resources){
+            int fillAmount = Mathf.FloorToInt((float)rLocations.Count * resource.resourcePopulation);
+            for(int i = 0; i < fillAmount; i++){
+                if(locationIndex >= rLocations.Count){ continue; }
+                
+                Vector3 pos = rLocations[locationIndex];
+                EntityResourceNode r = Instantiate(resource.resourceNode, pos, Quaternion.identity, parentFolder);
+                Collider col = r.GetComponent<Collider>();
+                Vector3 newPos = pos;
+                newPos.y = (map.localScale.y / 2) + col.bounds.extents.y;
+                r.transform.position = newPos;
+                Vector3 rEuler = r.transform.eulerAngles;
+                rEuler.y = RESOURCE_NODE_DIRECTIONS[UnityEngine.Random.Range(0, RESOURCE_NODE_DIRECTIONS.Length-1)];
+                r.transform.eulerAngles = rEuler;
+
+                locationIndex++;
+            }
+        }        
+    }
 
     // RUNS ALL ENTITIES
     private void FixedUpdate() {
@@ -92,16 +133,17 @@ public class GameLoop : MonoBehaviour{
     /// </summary>
     void Start(){
         MapScale = Utilities.Remap(Wave + 1, 1, waves.Length, settings.mapSize.min, settings.mapSize.max);
+        previousMapScale = Grid.RoundToGrid((float)settings.mapSize.min * settings.resourceSpawnSubtractMin, settings.cellSize);
         NewGame();
     }
-
     private void Update() {
         PlayMapAnimation();
 
         // Ensures the game is always running
         if(CurrentGame.Run() && Wave < waves.Length-1){
             Wave++;
-            MapScale = Utilities.Remap(Wave + 1, 1, waves.Length, settings.mapSize.min, settings.mapSize.max);
+            previousMapScale = MapScale;
+            MapScale = Utilities.Remap(Wave + 1, 1, waves.Length, settings.mapSize.min, settings.mapSize.max);            
             NewGame();
             return;
         }
@@ -301,8 +343,15 @@ public class GameLoop : MonoBehaviour{
     /// </summary>
     [Serializable] public class Settings{
         public AnimationInterpolation scaleAnimation;
-        public Utilities.MinMax mapSize = new Utilities.MinMax(15, 100);
+        public Utilities.MinMax mapSize = new(15, 100);
+        [Tooltip("The distance up to the min map scale where we will start to spawn resources"), Range(0, 1)]public float resourceSpawnSubtractMin;
+        public ResourceSettings[] resources;
         public int cellSize = 1;
+    }
+
+    [Serializable] public class ResourceSettings{
+        [Tooltip("The resource we want to spawn")] public EntityResourceNode resourceNode;
+        [Tooltip("The % quantity of this resource which will spawn"), Range(0, 1)] public float resourcePopulation = 0.05f;
     }
 
     /// <summary>

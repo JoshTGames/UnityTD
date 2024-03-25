@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AstralCandle.Animation;
 using System;
+using AstralCandle.TowerDefence;
 
 /*
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
@@ -75,6 +76,19 @@ namespace AstralCandle.Entity{
 
 
         //--- Base functions
+        public override void Run(){
+            if(isHovered){
+                EntityTooltip tooltipInstance = EntityTooltip.instance;
+                if(!tooltipInstance.contents.ContainsKey("hp")){ return; }
+                EntityTooltip.Contents content = tooltipInstance.contents["hp"];
+
+                float hp = GetHealth();
+                string txt = $"{Mathf.CeilToInt(hp * 100)}%";
+
+                content.SetPercent(hp);
+                content.SetText(txt);
+            }
+        }
 
         /// <summary>
         /// Damages the entity over time
@@ -105,6 +119,21 @@ namespace AstralCandle.Entity{
             float value = hitAnimationSettings.Play();
             meshRenderer.material.SetFloat("_Opacity", value);
             meshRenderer.transform.localScale -= (Vector3.one * 0.25f) * value;
+        }
+
+        public override void OnIsHovered(bool isHovered){
+            base.OnIsHovered(isHovered);
+            if(isHovered){
+                float hp = GetHealth();
+                EntityTooltip tooltipInstance = EntityTooltip.instance;
+                tooltipInstance.tooltip.AddContents(
+                    tooltipInstance.ContentsUIPrefab,
+                    tooltipInstance.TooltipObject, 
+                    ref tooltipInstance.contents, 
+                    new EntityTooltip.Contents("hp", tooltipInstance.healthData.colour, tooltipInstance.healthData.icon, $"{Mathf.CeilToInt(hp * 100)}%")
+                );
+                tooltipInstance.contents["hp"].SetPercent(hp);
+            }
         }
 
         //--- Abstract functions

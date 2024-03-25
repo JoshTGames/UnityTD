@@ -46,7 +46,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1.8000001, y: 1.5, z: 1.8000001}
-  m_Center: {x: 0, y: -0.02399993, z: 0}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &1138573586753488041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -60,7 +60,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _name: Archer Tower
-  _description: Shoots enemies!
+  _description: Attacks hostiles
+  entityAttributeIcons:
+  - {fileID: 21300000, guid: 13ed12c7894b5d844ad8fbbed9a2f4b8, type: 3}
+  - {fileID: 21300000, guid: 1b23c535f4768454a8f1473f1c9824d1, type: 3}
   spawnSettings:
     animationSettings:
       curve:
@@ -101,12 +104,13 @@ MonoBehaviour:
         m_PersistentCalls:
           m_Calls: []
     cachedScale: {x: 0, y: 0, z: 0}
-  showDebug: 1
+  showDebug: 0
   _ownerId: 0
   meshRenderer: {fileID: 1138573588514287306}
   selectionCircleYOffset: 0
+  isEnabled: 0
   immortal: 0
-  maxHealth: 100
+  maxHealth: 75
   _resistances: 
   hitAnimationSettings:
     curve:
@@ -142,7 +146,7 @@ MonoBehaviour:
   hitColour: {r: 4, g: 0, b: 0, a: 1}
   healColour: {r: 0.20787686, g: 3.3531437, b: 0.3979755, a: 1}
   dropSettings: []
-  maxOccupants: 2
+  maxOccupants: 4
   spawnedEntity: {fileID: 3666201108349969699, guid: 0d90e12d81b05394c9e4a2ca5a13ed9d,
     type: 3}
   entityLayer:
@@ -150,7 +154,7 @@ MonoBehaviour:
     m_Bits: 8
   damageInfliction: 0
   damage: 20
-  attackRadius: 5
+  attackRadius: 8
   projectileHeightOffset: 5
   cooldown: 0.5
   projectile: {fileID: 817751116804508011, guid: 6b4c2368d6997dc4fb82c08548c2f746,

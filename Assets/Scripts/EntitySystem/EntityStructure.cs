@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AstralCandle.TowerDefence;
 using UnityEngine;
 
 /*
@@ -51,6 +52,32 @@ namespace AstralCandle.Entity{
             PlayerControls.instance.entities.ShiftClickSelectEntity(entity);
             occupants--;
             return EntityERR.SUCCESS;
+        }
+
+        public override void Run(){
+            base.Run();
+            if(isHovered){
+                EntityTooltip tooltipInstance = EntityTooltip.instance;
+                if(!tooltipInstance.contents.ContainsKey("occupants")){ return; }
+                EntityTooltip.Contents content = tooltipInstance.contents["occupants"];                
+
+                content.SetPercent((float)occupants / maxOccupants);
+                content.SetText($"{occupants}/{maxOccupants}");
+            }
+        }
+
+        public override void OnIsHovered(bool isHovered){
+            base.OnIsHovered(isHovered);
+            if(isHovered){
+                EntityTooltip tooltipInstance = EntityTooltip.instance;
+                tooltipInstance.tooltip.AddContents(
+                    tooltipInstance.ContentsUIPrefab,
+                    tooltipInstance.TooltipObject, 
+                    ref tooltipInstance.contents, 
+                    new EntityTooltip.Contents("occupants", tooltipInstance.occupantData.colour, tooltipInstance.occupantData.icon, $"{occupants}/{maxOccupants}")
+                );
+                tooltipInstance.contents["occupants"].SetPercent((float)occupants / maxOccupants);
+            }
         }
 
         protected override void Start(){

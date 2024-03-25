@@ -15,30 +15,25 @@ using AstralCandle.Animation;
 
 public class PlayerControls : MonoBehaviour{
     public static PlayerControls instance;
+    [Header("Camera Settings")]
     [SerializeField, Tooltip("Not much point to change, but ensures owned entities can be compared to the player")] int _ownerId = 0;
     [SerializeField] float zoomSensitivity = 1;
     [SerializeField] float minOrthroSize = 5f;
     [SerializeField, Range(0.1f, 0.5f)] float minZoom;
     [SerializeField] float zoomSmoothing = 0.1f;
     [SerializeField] float pivotingSensitivity = 1;
+    [Header("Game Settings")]
     [SerializeField] SelectionCircle selectionGameObject;
     [SerializeField] DragSettings dragSettings;
     [SerializeField] LayerMask entityMask, mapMask;
     [SerializeField] Collider map;
     [SerializeField] float buildingPositioningSmoothing = 0.1f;
+    [SerializeField] BuildUI buildUI;
     Vector3 buildingPositioningVelocity;
 
 
     public EntitySelection<Entity> entities;
-    public int ownerId{ get => _ownerId; }
-    BuildSystem building;
-    BuildSystem Building{
-        get => building;
-        set{
-            if(building != null && building.Entity != null){ Destroy(building.Entity.gameObject); }
-            building = value;
-        }
-    }
+    public int ownerId{ get => _ownerId; }   
 
     Camera cam;
 
@@ -83,12 +78,12 @@ public class PlayerControls : MonoBehaviour{
             RaycastHit hit = GetWorldRay();
             worldPoint = (hit.collider)? hit : worldPoint;
 
-            if(Building != null && !IsPivoting){
-                Building?.SetPosition(worldPoint);
-                entities.hovered = null;
-                return;
-            }
-            entities.hovered = (selectStartPosition == null && !IsPivoting)? entities.PositionOverEntity(value, entityMask): null;
+            // if(Building != null && !IsPivoting){
+            //     Building?.SetPosition(worldPoint);
+            //     entities.hovered = null;
+            //     return;
+            // }
+            entities.hovered = (selectStartPosition == null && !IsPivoting && !buildUI.isOpen)? entities.PositionOverEntity(value, entityMask): null;
             if(entities.hovered == null){ EntityTooltip.instance.tooltip = null; } // Should hopefully stop glitching where text stays active
 
             // Dragging behaviour
@@ -156,9 +151,9 @@ public class PlayerControls : MonoBehaviour{
         transform.parent.position = Vector3.SmoothDamp(transform.parent.position, peakPosition, ref peakVelocity, zoomSmoothing);
         transform.parent.rotation = Utilities.SmoothDampQuaternion(transform.parent.rotation, pivotRotation, ref pivotVelocity, zoomSmoothing);
 
-        if(Building != null){
-            Building.Entity.transform.position = Vector3.SmoothDamp(building.Entity.transform.position, building.Position, ref buildingPositioningVelocity, buildingPositioningSmoothing);
-        }        
+        // if(Building != null){
+        //     Building.Entity.transform.position = Vector3.SmoothDamp(building.Entity.transform.position, building.Position, ref buildingPositioningVelocity, buildingPositioningSmoothing);
+        // }        
     }
 
     private void Awake(){
@@ -173,7 +168,13 @@ public class PlayerControls : MonoBehaviour{
     public void OnShiftSelect(InputValue value) => shiftDown = value.Get<float>() > 0;
     public void OnAltSelect(InputValue value) => altDown = value.Get<float>() > 0;
     public void OnSelect(InputValue value){
-        if(IsPivoting || building != null){ return; }   
+        if(buildUI.isOpen){
+            entities.hovered = null;
+            entities.selected.Clear();
+            return;
+        }
+
+        if(IsPivoting){ return; }   
         switch(value.Get<float>()){
             case 1: // Start                    
                 selectStartPosition = cursorPosition;
@@ -202,8 +203,14 @@ public class PlayerControls : MonoBehaviour{
         }
     }
     public void OnAction(InputValue value){
+        if(buildUI.isOpen){
+            if(buildUI.Building != null){ buildUI.Building = null; }
+            entities.hovered = null;
+            entities.selected.Clear();
+            return;
+        }
+
         if(IsPivoting){ return; }
-        if(Building != null){ Building = null; }
         Camera cam = Camera.main;
 
         // Figure out task
@@ -319,7 +326,8 @@ public class PlayerControls : MonoBehaviour{
     [SerializeField] Entity tstStructure;
     
     public void OnBuild(InputValue value){
-        Building = new BuildSystem(Instantiate(tstStructure, worldPoint.point, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform), worldPoint);
+        buildUI.ToggleOpen();
+        // Building = new BuildSystem(Instantiate(tstStructure, worldPoint.point, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform), worldPoint);
         entities.DeselectAll();
     }
     [System.Serializable] public class DragSettings{

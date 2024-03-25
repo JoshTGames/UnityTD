@@ -180,7 +180,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _name: Orc
-  _description: Enemy
+  _description: 
+  entityAttributeIcons:
+  - {fileID: 21300000, guid: c49735f2d423f8746a2f6a5df5721792, type: 3}
   spawnSettings:
     animationSettings:
       curve:

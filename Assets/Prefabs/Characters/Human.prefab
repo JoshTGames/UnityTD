@@ -4932,7 +4932,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _name: Human
-  _description: Friendly
+  _description: Helpful for performing tasks
+  entityAttributeIcons:
+  - {fileID: 21300000, guid: 13ed12c7894b5d844ad8fbbed9a2f4b8, type: 3}
   spawnSettings:
     animationSettings:
       curve:
@@ -5024,8 +5026,8 @@ MonoBehaviour:
     steeringCircleResolution: 16
     steeringCircleRadius: 2
     steeringCircleYOffset: -0.5
-    extraInterest: 1
-    dangerMultiplier: 5
+    extraInterest: 0
+    dangerMultiplier: 2
     deltaDistanceToTarget: 0.1
   leanFactor: 10
   smoothing: 0.15

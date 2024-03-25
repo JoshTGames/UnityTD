@@ -63,6 +63,7 @@ namespace AstralCandle.Entity{
         public float GetInteractRadius() => interactRadius;
         
         public override void Run(){
+            base.Run();
             if(entityTask != null){                
                 EntityERR success = entityTask.RunTask(transform.position, aISettings.deltaDistanceToTarget, steering);
                 

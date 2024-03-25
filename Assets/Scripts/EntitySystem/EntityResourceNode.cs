@@ -11,7 +11,7 @@ namespace AstralCandle.Entity{
     public class EntityResourceNode : EntityHealth{
         protected EntityResourceNode(int ownerId) : base(ownerId){}
 
-        public override void Run(){}
+        public override void Run() => base.Run();
 
         protected override void OnImmortalHit(){}
     }
