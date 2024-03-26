@@ -44,6 +44,11 @@ public class Keep : EntityDefensiveStructure, IStorage{
         public UnityEvent onOccupantGeneration;
         float elapsedOccupantGenerationTimer = 0;
 
+        /// <summary>
+        /// Spawns occupants in this structure every x seconds if we have sufficient amount of resources
+        /// </summary>
+        /// <param name="maxOccupants">The max number of occupants that can exist in this structure</param>
+        /// <param name="occupants">The concurrent number of occupants in this structure</param>
         public void SpawnOccupant(int maxOccupants, ref int occupants){
             elapsedOccupantGenerationTimer -= Time.fixedDeltaTime;
             if(!resources.ContainsKey(resource) || resources[resource] < quantity || occupants >= maxOccupants){

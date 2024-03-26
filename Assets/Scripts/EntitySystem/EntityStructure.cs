@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using AstralCandle.TowerDefence;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace AstralCandle.Entity{
         [SerializeField] int maxOccupants = 1;
         protected int occupants;
         [SerializeField] protected Entity spawnedEntity;
+        [SerializeField] protected Repair repairSettings;
 
 
         protected EntityStructure(int ownerId) : base(ownerId){}
@@ -30,6 +32,7 @@ namespace AstralCandle.Entity{
         /// Returns the max number of occupants for this structure
         /// </summary>
         protected int GetMaxOccupants() => maxOccupants;
+
 
         public EntityERR AddOccupant(Entity entity){
             ITask task = entity as ITask;
@@ -56,6 +59,7 @@ namespace AstralCandle.Entity{
 
         public override void Run(){
             base.Run();
+            repairSettings.RepairEntity(this);
             if(isHovered){
                 EntityTooltip tooltipInstance = EntityTooltip.instance;
                 if(!tooltipInstance.contents.ContainsKey("occupants")){ return; }
@@ -89,6 +93,29 @@ namespace AstralCandle.Entity{
         protected override void OnDestroy(){
             GameLoop.instance?.playerStructures.Remove(this);
             base.OnDestroy();
+        }
+
+        protected override void OnDamage(int value){
+            base.OnDamage(value);
+            repairSettings.ResetTime();
+        }
+
+        [Serializable] public class Repair{
+            [SerializeField, Range(0, 1)] float healAmount;
+            [SerializeField] float timeTillHeal;
+
+            float elapsedTime;
+            public void ResetTime() => elapsedTime = timeTillHeal;
+
+            public void RepairEntity(EntityStructure entity){
+                elapsedTime -= Time.fixedDeltaTime;
+                if(entity.GetHealth() >= 1 || entity.GetEfficiency() <= 0){ ResetTime(); }
+
+                if(elapsedTime <= 0){
+                    ResetTime();
+                    entity.Heal(Mathf.FloorToInt(entity.GetMaxHealth() * healAmount * entity.GetEfficiency()));
+                }
+            }
         }
     }
 }

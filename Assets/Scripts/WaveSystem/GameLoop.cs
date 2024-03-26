@@ -21,6 +21,8 @@ public class GameLoop : MonoBehaviour{
     [SerializeField] Transform map;
     [SerializeField] Settings settings;
     [SerializeField] WaveProfile[] waves;
+    [SerializeField] EntityCharacter humanEntity;
+    [SerializeField] int humansToStartWith = 4;
     #endregion
     #region COSMETIC
     Vector3 previousScale, targetScale;
@@ -97,10 +99,10 @@ public class GameLoop : MonoBehaviour{
         Transform parentFolder = GameObject.Find("_GAME_RESOURCES_").transform;
 
         System.Random random = new();
-        List<Vector3> rLocations = resourceSpawnLocations.OrderBy(e => random.NextDouble()).ToList();
+        List<Vector3> rLocations = resourceSpawnLocations.OrderBy(e => random.NextDouble()).ToList(); // Shuffles
         int locationIndex = 0;
         foreach(ResourceSettings resource in settings.resources){
-            int fillAmount = Mathf.FloorToInt((float)rLocations.Count * resource.resourcePopulation);
+            int fillAmount = Mathf.FloorToInt(rLocations.Count * resource.resourcePopulation);
             for(int i = 0; i < fillAmount; i++){
                 if(locationIndex >= rLocations.Count){ continue; }
                 
@@ -117,6 +119,21 @@ public class GameLoop : MonoBehaviour{
                 locationIndex++;
             }
         }        
+
+        // Spawn starting humans
+        if(Wave == 0){
+            for(int i = locationIndex; i < locationIndex + 4; i++){                
+                Vector3 pos = rLocations[i % rLocations.Count];
+                EntityCharacter c = Instantiate(humanEntity, pos, Quaternion.identity, parentFolder);
+                Collider col = c.GetComponent<Collider>();
+                Vector3 newPos = pos;
+                newPos.y = (map.localScale.y / 2) + col.bounds.extents.y;
+                c.transform.position = newPos;
+                Vector3 cEuler = c.transform.eulerAngles;
+                cEuler.y = RESOURCE_NODE_DIRECTIONS[UnityEngine.Random.Range(0, RESOURCE_NODE_DIRECTIONS.Length-1)];
+                c.transform.eulerAngles = cEuler;
+            }
+        }
     }
 
     // RUNS ALL ENTITIES

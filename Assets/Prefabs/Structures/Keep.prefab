@@ -150,6 +150,9 @@ MonoBehaviour:
   maxOccupants: 10
   spawnedEntity: {fileID: 3666201108349969699, guid: 0d90e12d81b05394c9e4a2ca5a13ed9d,
     type: 3}
+  repairSettings:
+    healAmount: 0.05
+    timeTillHeal: 3
   entityLayer:
     serializedVersion: 2
     m_Bits: 8

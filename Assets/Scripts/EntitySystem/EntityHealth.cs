@@ -61,6 +61,7 @@ namespace AstralCandle.Entity{
 
         //--- Health functions
         public float GetHealth() => Mathf.Clamp01((float)Health / maxHealth);
+        public float GetMaxHealth() => maxHealth;
 
         public virtual void Heal(int value) => Health += Mathf.Abs(value); // Ensures the value is positive
 
@@ -156,7 +157,7 @@ namespace AstralCandle.Entity{
                 Vector3 startPos = _collider.bounds.center + new Vector3(rndX, -_collider.bounds.extents.y, rndZ);
 
                 EntityResource r = Instantiate(drop.resource, startPos, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform);
-                r.transform.position += new Vector3(0, r.GetComponent<Collider>().bounds.extents.y);
+                r.transform.position += new Vector3(0, r.GetComponent<Collider>().bounds.extents.y * 1.25f);
 
                 int quantityToDrop = UnityEngine.Random.Range(drop.quantity.min, drop.quantity.max + 1);
                 r.quantity = quantityToDrop;

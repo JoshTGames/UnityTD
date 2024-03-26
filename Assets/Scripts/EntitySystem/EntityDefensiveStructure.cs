@@ -69,6 +69,7 @@ namespace AstralCandle.Entity{
 
             int calculatedDMG = Mathf.FloorToInt(damage * (1f / GetMaxOccupants()));
             entity.Damage(calculatedDMG, damageInfliction, this);
+            repairSettings.ResetTime();
             return EntityERR.SUCCESS;
         }
 
