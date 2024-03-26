@@ -15,7 +15,9 @@ MonoBehaviour:
   building: {fileID: 1138573586753488041, guid: 96ae18f3f220d6344a3abc8d40bce0b0,
     type: 3}
   requiredResources:
+  - resource: {fileID: 11400000, guid: 239b01a300caced4fa8577dd0fbb05fb, type: 2}
+    quantity: 10
   - resource: {fileID: 11400000, guid: c79758a0a6c4f1a4d9d03c22a22a8815, type: 2}
-    quantity: 5
+    quantity: 10
   - resource: {fileID: 11400000, guid: f5824b56864f83e48a00b187927cd153, type: 2}
-    quantity: 2
+    quantity: 5

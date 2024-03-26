@@ -14,9 +14,12 @@ using UnityEngine.EventSystems;
 */
 
 public class BuildUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler{    
+    public static BuildUI instance;
     [SerializeField] MiscSettings miscSettings;
     [SerializeField] Slot structureSlotUI;
     [SerializeField] int uiLayer;
+    [SerializeField] LayerMask buildingObstacleLayers;
+    [SerializeField] BuildSystem.PlacementColours placementColours;
     [SerializeField] BuildProfile[] buildings;
     
 
@@ -29,9 +32,7 @@ public class BuildUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler{
     public BuildSystem Building{
         get => building;
         set{
-            if(building?.Entity != null){
-                Destroy(building.Entity);
-            }
+            if(building?.Entity != null){ Destroy(building.Entity.gameObject); }
             building = value;
         }
     }
@@ -41,6 +42,8 @@ public class BuildUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler{
     bool resetScrollValue;
 
     private void Start(){
+        instance = this;
+
         UI = transform.GetChild(0).gameObject;
         scroll = GetComponentInChildren<Scrollbar>();        
 
@@ -62,6 +65,8 @@ public class BuildUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler{
 
             newSlot.mesh = mesh.GetComponent<Renderer>();
             newSlot.profile = structure;
+            newSlot.obstacleLayers = buildingObstacleLayers;
+            newSlot.placementColours = placementColours;
         }
     }
 
@@ -84,8 +89,9 @@ public class BuildUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler{
         foreach(ResourceStash s in miscSettings.stash){
             if(!Keep.resources.ContainsKey(s.associatedResource)){ continue; }
             s.label.text = $"{Keep.resources[s.associatedResource]}";
-        }
+        }        
     }
+
 
     public void ToggleOpen(){
         isOpen = !isOpen;

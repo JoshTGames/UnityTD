@@ -33,6 +33,7 @@ public class PlayerControls : MonoBehaviour{
     Vector3 buildingPositioningVelocity;
     #endregion
 
+    public Collider Map{ get => map; }
 
     public EntitySelection<Entity> entities;
     public int ownerId{ get => _ownerId; }   
@@ -76,7 +77,10 @@ public class PlayerControls : MonoBehaviour{
     Rect selectionBox;
     #endregion
 
-    RaycastHit worldPoint; // Used so we dont have to recalculate the hit point every frame
+    public RaycastHit WorldPoint{ // Used so we dont have to recalculate the hit point every frame
+        get;
+        private set;
+    } 
     Vector3 _cursorPosition, previousCursorPosition;
     public Vector3 cursorPosition{
         get => _cursorPosition;
@@ -84,13 +88,13 @@ public class PlayerControls : MonoBehaviour{
             previousCursorPosition = _cursorPosition;
             _cursorPosition = value;
             RaycastHit hit = GetWorldRay();
-            worldPoint = (hit.collider)? hit : worldPoint;
+            WorldPoint = (hit.collider)? hit : WorldPoint;
 
-            // if(Building != null && !IsPivoting){
-            //     Building?.SetPosition(worldPoint);
-            //     entities.hovered = null;
-            //     return;
-            // }
+            if(BuildUI.instance?.Building != null && !IsPivoting){
+                BuildUI.instance.Building.SetPosition(WorldPoint);
+                entities.hovered = null;
+                return;
+            }
             entities.hovered = (selectStartPosition == null && !IsPivoting && !buildUI.isOpen)? entities.PositionOverEntity(value, entityMask): null;
             if(entities.hovered == null && canZoom){ EntityTooltip.instance.tooltip = null; } // Should hopefully stop glitching where text stays active
 
@@ -135,8 +139,8 @@ public class PlayerControls : MonoBehaviour{
     /// <param name="safePosition">The position to fall back on if a new position can be found</param>
     /// <returns>The position the player is wanting to zoom in on</returns>
     Vector3 GetPeakPosition(Vector3 safePosition){
-        if(!worldPoint.collider){ return safePosition; }
-        Vector3 dir = worldPoint.point - map.transform.position;
+        if(!WorldPoint.collider){ return safePosition; }
+        Vector3 dir = WorldPoint.point - map.transform.position;
 
         return map.transform.position + dir * .5f;
     }
@@ -159,9 +163,10 @@ public class PlayerControls : MonoBehaviour{
         transform.parent.position = Vector3.SmoothDamp(transform.parent.position, peakPosition, ref peakVelocity, zoomSmoothing);
         transform.parent.rotation = Utilities.SmoothDampQuaternion(transform.parent.rotation, pivotRotation, ref pivotVelocity, zoomSmoothing);
 
-        // if(Building != null){
-        //     Building.Entity.transform.position = Vector3.SmoothDamp(building.Entity.transform.position, building.Position, ref buildingPositioningVelocity, buildingPositioningSmoothing);
-        // }        
+        if(BuildUI.instance?.Building != null){
+            BuildSystem building = BuildUI.instance.Building;
+            building.Entity.transform.position = Vector3.SmoothDamp(building.Entity.transform.position, building.Position, ref buildingPositioningVelocity, buildingPositioningSmoothing);
+        }        
     }
 
     private void Awake(){
@@ -177,14 +182,19 @@ public class PlayerControls : MonoBehaviour{
     public void OnAltSelect(InputValue value) => altDown = value.Get<float>() > 0;
     public void OnSelect(InputValue value){
         MouseDown = (value.Get<float>() == 1)? true : false;
-        
-        if(buildUI.isOpen){
-            entities.hovered = null;
-            entities.selected.Clear();
+
+        BuildSystem building = buildUI.Building;
+        if(building != null){
+            if(building.Build()){
+                Instantiate(building.profile.Building, building.Position, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform);
+                buildUI.Building = null;
+                buildUI.ToggleOpen();
+            }
             return;
         }
+        
 
-        if(IsPivoting){ return; }   
+        if(buildUI.isOpen || IsPivoting){ return; }   
         switch(value.Get<float>()){
             case 1: // Start  
                 selectStartPosition = cursorPosition;
@@ -212,15 +222,14 @@ public class PlayerControls : MonoBehaviour{
                 break;
         }
     }
-    public void OnAction(InputValue value){
-        if(buildUI.isOpen){
-            if(buildUI.Building != null){ buildUI.Building = null; }
-            entities.hovered = null;
-            entities.selected.Clear();
+    public void OnAction(InputValue value){   
+        if(buildUI.Building != null){ 
+            buildUI.Building = null; 
+            buildUI.ToggleOpen();
             return;
-        }
-
-        if(IsPivoting){ return; }
+        }     
+        
+        if(buildUI.isOpen || IsPivoting){ return; }
         Camera cam = Camera.main;
 
         // Figure out task
@@ -333,14 +342,13 @@ public class PlayerControls : MonoBehaviour{
         // Quaternion yawRot = Quaternion.AngleAxis(yaw, transform.right);
         pivotRotation = Quaternion.Normalize(pitchRot);
     }
-    [SerializeField] Entity tstStructure;
     
     public void OnBuild(InputValue value){
+        if(buildUI.Building != null){ return; }
         buildUI.ToggleOpen();
-        // Building = new BuildSystem(Instantiate(tstStructure, worldPoint.point, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform), worldPoint);
         entities.DeselectAll();
     }
-    [System.Serializable] public class DragSettings{
+    [Serializable] public class DragSettings{
         [SerializeField, Tooltip("The UI visual element")] Image dragUI;
         
         [SerializeField, Tooltip("The colours to set the UI based on state")] Color addSelection = Color.green, reSetTaskSelection = Color.red;

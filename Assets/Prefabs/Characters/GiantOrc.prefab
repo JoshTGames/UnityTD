@@ -273,7 +273,7 @@ MonoBehaviour:
     quantity:
       min: 5
       max: 10
-  moveSpeed: 0.5
+  moveSpeed: 1.25
   interactRadius: 5
   aISettings:
     steeringObstacles:

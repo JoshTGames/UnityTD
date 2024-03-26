@@ -14,6 +14,8 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
     [SerializeField, Range(0.5f, 1)] float ditherRange = 0.9f;
     [HideInInspector] public Renderer mesh;
     [HideInInspector] public BuildProfile profile;
+    [HideInInspector] public LayerMask obstacleLayers;
+    [HideInInspector] public BuildSystem.PlacementColours placementColours;
 
     Camera cam;
     bool doRotate = false;
@@ -23,7 +25,11 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
     public void OnPointerClick(PointerEventData eventData){
         if(!canAfford){ return; }
+        BuildUI.instance.ToggleOpen();
+
         // Trigger function
+        Entity e = Instantiate(profile.Building, PlayerControls.instance.WorldPoint.point, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform);
+        BuildUI.instance.Building = new BuildSystem(e, profile, PlayerControls.instance.WorldPoint, obstacleLayers, placementColours);
     }
 
     public void OnPointerEnter(PointerEventData eventData){
@@ -75,7 +81,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
             BuildProfile.Resource r = profile.RequiredResources[i];
             int currentQuantity = 0;
             if(Keep.resources.ContainsKey(r.resource)){ currentQuantity = Mathf.Clamp(Keep.resources[r.resource], 0, r.quantity); }
-            instance.contents[r.resource.name].SetPercent(currentQuantity / r.quantity);
+            instance.contents[r.resource.name].SetPercent((float)currentQuantity / r.quantity);
         }
     }
 
@@ -113,11 +119,11 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
         // Update tooltip content bars
         EntityTooltip instance = EntityTooltip.instance;
-        for(int i = 0; i < profile.RequiredResources.Length; i++){
+        for(int i = 0; i < profile.RequiredResources.Length && instance.contents.Count >0; i++){
             BuildProfile.Resource r = profile.RequiredResources[i];
             int currentQuantity = 0;
             if(Keep.resources.ContainsKey(r.resource)){ currentQuantity = Mathf.Clamp(Keep.resources[r.resource], 0, r.quantity); }
-            instance.contents[r.resource.name].SetPercent(currentQuantity / r.quantity);
+            instance.contents[r.resource.name].SetPercent((float)currentQuantity / r.quantity);
             instance.contents[r.resource.name].SetText($"{currentQuantity}/{r.quantity}");
         }
 

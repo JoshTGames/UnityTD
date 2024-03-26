@@ -17,27 +17,55 @@ public class BuildSystem{
         get;
         private set;
     }
-    float yOffset;
+    public bool CanPlace{ get; private set; } = true;
 
-    public BuildSystem(Entity entity, RaycastHit ray, float specularAmount = 0, float dithering = 0.3f){
+    public BuildProfile profile{ get; private set; }
+    float yOffset;
+    Collider _collider;
+    Vector3 colExtents;
+    LayerMask obstacles;
+    PlacementColours colours;
+
+    public BuildSystem(Entity entity, BuildProfile profile, RaycastHit ray, LayerMask obstacleLayers, PlacementColours colours, float specularAmount = 0, float dithering = 0.3f){
         this.Entity = entity;
-        Collider col = Entity.GetComponent<Collider>();
-        yOffset = col.bounds.extents.y + ray.collider.bounds.center.y + ray.collider.bounds.extents.y;
+        this.profile = profile;
+        this._collider = Entity.GetComponent<Collider>();
+        this.colExtents = this._collider.bounds.extents;
+        this.obstacles = obstacleLayers;
+        this.colours = colours;
+
+        float tempOffset = PlayerControls.instance.Map.bounds.extents.y;
+        if(ray.collider){ tempOffset = ray.collider.bounds.center.y + ray.collider.bounds.extents.y; }
+
+        this.yOffset = this._collider.bounds.extents.y + tempOffset;
         SetPosition(ray);
         entity.transform.position = Position;
 
-        col.enabled = false;
-        entity.isEnabled = false;
-        entity.enabled = false;
-        entity.Material.SetFloat("_SpecularAmount", specularAmount);
-        entity.Material.SetFloat("_Dithering", dithering);
+        this._collider.enabled = false;
+        this.Entity.isEnabled = false;
+        this.Entity.enabled = false;
+        this.Entity.Material.SetFloat("_SpecularAmount", specularAmount);
+        this.Entity.Material.SetFloat("_Dithering", dithering);
     }
 
-    public void Build(){}
+    public bool Build(){
+        if(!CanPlace){ return false; }
+        foreach(BuildProfile.Resource r in profile.RequiredResources){ Keep.resources[r.resource] -= r.quantity; }
+        return true;
+    }
 
     public void SetPosition(RaycastHit ray){
         Vector3 clampedPos = GameLoop.Grid.RoundToGrid(ray.point, 2);
         clampedPos.y = yOffset;
-        Position = clampedPos;
+        this.Position = clampedPos;
+        Collider[] cols = Physics.OverlapBox(Position, colExtents, Quaternion.identity, obstacles);
+        this.CanPlace = cols == null || cols.Length == 0;
+
+        this.Entity.Material.SetColor("_SpecularColour", (CanPlace)? colours.canPlace : colours.cantPlace);
+    }
+
+    [System.Serializable] public class PlacementColours{
+        [ColorUsage(showAlpha: false, hdr: true)]
+        public Color canPlace = Color.green, cantPlace = Color.red;
     }
 }
