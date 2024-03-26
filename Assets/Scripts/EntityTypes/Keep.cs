@@ -1,10 +1,11 @@
 using System.Collections.Generic;
-using System.Transactions;
 using AstralCandle.Entity;
 using UnityEngine;
+using UnityEngine.Events;
 public class Keep : EntityDefensiveStructure, IStorage{
     public static Dictionary<ResourceData, int> resources = new();
-
+    [SerializeField] OccupantGeneration occupantGenerationSettings;
+    
 
     public Keep(int ownerId) : base(ownerId){}
 
@@ -23,22 +24,39 @@ public class Keep : EntityDefensiveStructure, IStorage{
         return EntityERR.SUCCESS;
     }
 
-    public ResourceData.Resource GetResource(){
-        throw new System.NotImplementedException();
-    }
+    protected override void OnImmortalHit(){}
 
-    public EntityERR Withdraw(ResourceData.Resource resource, IStorage storage)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    protected override void OnImmortalHit()
-    {
-        throw new System.NotImplementedException();
+    public override void Run(){
+        base.Run();
+        occupantGenerationSettings.SpawnOccupant(GetMaxOccupants(), ref occupants);
     }
 
     protected override void Start(){
         base.Start();
         resources = new();
+    }
+
+    [System.Serializable] public class OccupantGeneration{
+        public ResourceData resource;
+        public int quantity = 10;
+
+        public float occupantGenerationTimer = 10;
+        public UnityEvent onOccupantGeneration;
+        float elapsedOccupantGenerationTimer = 0;
+
+        public void SpawnOccupant(int maxOccupants, ref int occupants){
+            elapsedOccupantGenerationTimer -= Time.fixedDeltaTime;
+            if(!resources.ContainsKey(resource) || resources[resource] < quantity || occupants >= maxOccupants){
+                elapsedOccupantGenerationTimer = occupantGenerationTimer;
+                return;
+            }
+
+            if(elapsedOccupantGenerationTimer <= 0){
+                elapsedOccupantGenerationTimer = occupantGenerationTimer;
+                resources[resource] -= quantity;
+                occupants++;
+                onOccupantGeneration?.Invoke();
+            }
+        }
     }
 }

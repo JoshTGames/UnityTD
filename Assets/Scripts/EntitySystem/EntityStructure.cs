@@ -14,8 +14,8 @@ namespace AstralCandle.Entity{
     public abstract class EntityStructure : EntityHealth, IHousing{
         [Header("Structure Settings")]
         [SerializeField] int maxOccupants = 1;
-        int occupants;
-        [SerializeField] Entity spawnedEntity;
+        protected int occupants;
+        [SerializeField] protected Entity spawnedEntity;
 
 
         protected EntityStructure(int ownerId) : base(ownerId){}

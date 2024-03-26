@@ -63,26 +63,20 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
 
     void CreateTooltip(){
-        // Create contents
-        EntityTooltip.Contents[] contents = new EntityTooltip.Contents[profile.RequiredResources.Length];
-        for(int i = 0; i < profile.RequiredResources.Length; i++){
-            BuildProfile.Resource r = profile.RequiredResources[i];
-            int currentQuantity = 0;
-            if(Keep.resources.ContainsKey(r.resource)){ currentQuantity = Mathf.Clamp(Keep.resources[r.resource], 0, r.quantity); }
-            contents[i] = new EntityTooltip.Contents(r.resource.name, EntityTooltip.instance.resourceColour, r.resource.icon, $"{currentQuantity}/{r.quantity}");
-        }
-
         // Create tooltip
         Sprite[] attributes = profile.Building.GetAttributes().Skip(1).ToArray();
         EntityTooltip instance = EntityTooltip.instance;
-        instance.tooltip = new EntityTooltip.Tooltip(profile.Building.GetName(), profile.Building.GetDescription(), attributes, contents);
-        // Update content bars
+        instance.tooltip = new EntityTooltip.Tooltip(profile.Building.GetName(), profile.Building.GetDescription(), attributes);
+        // Manage contents
         for(int i = 0; i < profile.RequiredResources.Length; i++){
             BuildProfile.Resource r = profile.RequiredResources[i];
             int currentQuantity = 0;
             if(Keep.resources.ContainsKey(r.resource)){ currentQuantity = Mathf.Clamp(Keep.resources[r.resource], 0, r.quantity); }
+            EntityTooltip.Contents content = new EntityTooltip.Contents(r.resource.name, EntityTooltip.instance.resourceColour, r.resource.icon, $"{currentQuantity}/{r.quantity}");
+
+            instance.tooltip.AddContents(instance.ContentsUIPrefab, instance.TooltipObject, ref instance.contents, content);
             instance.contents[r.resource.name].SetPercent((float)currentQuantity / r.quantity);
-        }
+        }        
     }
 
     /// <summary>
@@ -119,7 +113,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
         // Update tooltip content bars
         EntityTooltip instance = EntityTooltip.instance;
-        for(int i = 0; i < profile.RequiredResources.Length && instance.contents.Count >0; i++){
+        for(int i = 0; i < profile.RequiredResources.Length && BuildUI.instance.isOpen && EntityTooltip.instance.tooltip != null; i++){
             BuildProfile.Resource r = profile.RequiredResources[i];
             int currentQuantity = 0;
             if(Keep.resources.ContainsKey(r.resource)){ currentQuantity = Mathf.Clamp(Keep.resources[r.resource], 0, r.quantity); }

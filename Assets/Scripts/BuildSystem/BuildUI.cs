@@ -7,6 +7,7 @@ using TMPro;
 using System;
 using AstralCandle.Entity;
 using UnityEngine.EventSystems;
+using AstralCandle.TowerDefence;
 
 /*
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
@@ -95,6 +96,7 @@ public class BuildUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler{
 
     public void ToggleOpen(){
         isOpen = !isOpen;
+        EntityTooltip.instance.tooltip = null;
         if(isOpen){ resetScrollValue = true; }
     }
 

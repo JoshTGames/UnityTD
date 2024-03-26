@@ -60,7 +60,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _name: Keep
-  _description: Protect this structure!
+  _description: Main structure - Attacks hostiles and works as resource storage
   entityAttributeIcons:
   - {fileID: 21300000, guid: 13ed12c7894b5d844ad8fbbed9a2f4b8, type: 3}
   - {fileID: 21300000, guid: 1b23c535f4768454a8f1473f1c9824d1, type: 3}
@@ -231,6 +231,13 @@ MonoBehaviour:
       m_RotationOrder: 4
     duration: 0.25
     onComplete:
+      m_PersistentCalls:
+        m_Calls: []
+  occupantGenerationSettings:
+    resource: {fileID: 11400000, guid: 239b01a300caced4fa8577dd0fbb05fb, type: 2}
+    quantity: 10
+    occupantGenerationTimer: 10
+    onOccupantGeneration:
       m_PersistentCalls:
         m_Calls: []
 --- !u!1 &9129879786878118429
