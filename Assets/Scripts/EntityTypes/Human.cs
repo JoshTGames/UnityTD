@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using AstralCandle.Entity;
 using System;
+using AstralCandle.TowerDefence;
 
 public class Human : EntityCharacter, IPickup, IHarvest{
     [SerializeField, Tooltip("Dictates how far this character leans when moving")] float leanFactor = 10f;
@@ -64,6 +65,21 @@ public class Human : EntityCharacter, IPickup, IHarvest{
         transform.rotation = lookRot * Quaternion.Euler(lean);
     }
 
+    public override void OnIsHovered(bool isHovered){
+            base.OnIsHovered(isHovered);
+            if(isHovered && heldResource != null){
+                float hp = GetHealth();
+                EntityTooltip tooltipInstance = EntityTooltip.instance;
+                tooltipInstance.tooltip.AddContents(
+                    tooltipInstance.ContentsUIPrefab,
+                    tooltipInstance.TooltipObject, 
+                    ref tooltipInstance.contents, 
+                    new EntityTooltip.Contents("resource", tooltipInstance.resourceColour, heldResource.resource.icon, $"{heldResource.quantity}")
+                );
+                tooltipInstance.contents["resource"].SetPercent(1);
+            }
+        }
+
     public override void Run(){
         base.Run();
         MagnetiseResources();
@@ -71,6 +87,15 @@ public class Human : EntityCharacter, IPickup, IHarvest{
         elapsedTime -= Time.fixedDeltaTime;
         if(entityTask == null && TargetResource && !TargetResource.MarkedForDestroy){
             SetTask(targetHarvestPos, () => Harvest(TargetResource));
+        }
+
+        EntityTooltip tooltipInstance = EntityTooltip.instance;
+        if(isHovered && tooltipInstance.contents.ContainsKey("resource")){
+            if(heldResource == null){
+                tooltipInstance.tooltip.RemoveContent(ref tooltipInstance.contents, "resource");
+                return;
+            }
+            tooltipInstance.contents["resource"].SetText($"{heldResource.quantity}");
         }
     }
 

@@ -14,7 +14,7 @@ namespace AstralCandle.Entity{
     public abstract class Entity : MonoBehaviour, ISelectable{
         [SerializeField, Tooltip("The name of this entity")] string _name;
         [SerializeField, TextArea, Tooltip("Information about this entity")] string _description;
-        [SerializeField, Tooltip("A visual way to show the player what this entity is")] Sprite[] entityAttributeIcons;
+        [SerializeField, Tooltip("A visual way to show the player what this entity is")] protected Sprite[] entityAttributeIcons;
         [SerializeField] Spawning spawnSettings;
         [SerializeField, Tooltip("If true, will show all debugging gizmos associated to this entity")] bool showDebug;
 
@@ -49,6 +49,7 @@ namespace AstralCandle.Entity{
         //--- FUNCTIONS
         public virtual string GetName() => _name;
         public virtual string GetDescription() => _description;
+        public virtual Sprite[] GetAttributes() => entityAttributeIcons;
 
 
         public virtual void OnIsHovered(bool isHovered){

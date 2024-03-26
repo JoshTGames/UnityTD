@@ -15,6 +15,7 @@ using AstralCandle.Animation;
 
 public class PlayerControls : MonoBehaviour{
     public static PlayerControls instance;
+    #region EDITOR VARIABLES
     [Header("Camera Settings")]
     [SerializeField, Tooltip("Not much point to change, but ensures owned entities can be compared to the player")] int _ownerId = 0;
     [SerializeField] float zoomSensitivity = 1;
@@ -27,9 +28,10 @@ public class PlayerControls : MonoBehaviour{
     [SerializeField] DragSettings dragSettings;
     [SerializeField] LayerMask entityMask, mapMask;
     [SerializeField] Collider map;
-    [SerializeField] float buildingPositioningSmoothing = 0.1f;
     [SerializeField] BuildUI buildUI;
+    [SerializeField] float buildingPositioningSmoothing = 0.1f;
     Vector3 buildingPositioningVelocity;
+    #endregion
 
 
     public EntitySelection<Entity> entities;
@@ -45,6 +47,12 @@ public class PlayerControls : MonoBehaviour{
         get;
         private set;
     }
+    public bool MouseDown{
+        get;
+        private set;
+    }
+
+    [HideInInspector] public bool canZoom = true;
 
     float _targetZoom = 1, zoomVelocity;
 
@@ -84,7 +92,7 @@ public class PlayerControls : MonoBehaviour{
             //     return;
             // }
             entities.hovered = (selectStartPosition == null && !IsPivoting && !buildUI.isOpen)? entities.PositionOverEntity(value, entityMask): null;
-            if(entities.hovered == null){ EntityTooltip.instance.tooltip = null; } // Should hopefully stop glitching where text stays active
+            if(entities.hovered == null && canZoom){ EntityTooltip.instance.tooltip = null; } // Should hopefully stop glitching where text stays active
 
             // Dragging behaviour
             if(selectStartPosition != null){
@@ -164,10 +172,12 @@ public class PlayerControls : MonoBehaviour{
     }
 
     public void OnCursor(InputValue value) => cursorPosition = value.Get<Vector2>();
-    public void OnZoom(InputValue value) => TargetZoom = Mathf.Clamp(TargetZoom + (value.Get<float>() * zoomSensitivity), 0, 1);
+    public void OnZoom(InputValue value) => TargetZoom = (canZoom)? Mathf.Clamp(TargetZoom + (value.Get<float>() * zoomSensitivity), 0, 1) : TargetZoom;
     public void OnShiftSelect(InputValue value) => shiftDown = value.Get<float>() > 0;
     public void OnAltSelect(InputValue value) => altDown = value.Get<float>() > 0;
     public void OnSelect(InputValue value){
+        MouseDown = (value.Get<float>() == 1)? true : false;
+        
         if(buildUI.isOpen){
             entities.hovered = null;
             entities.selected.Clear();
@@ -176,7 +186,7 @@ public class PlayerControls : MonoBehaviour{
 
         if(IsPivoting){ return; }   
         switch(value.Get<float>()){
-            case 1: // Start                    
+            case 1: // Start  
                 selectStartPosition = cursorPosition;
                 selectionBox = new Rect(); // Creates a new
                 if(altDown){ break; }

@@ -1,4 +1,5 @@
 using AstralCandle.Animation;
+using AstralCandle.TowerDefence;
 using UnityEngine;
 
 /*
@@ -34,6 +35,25 @@ namespace AstralCandle.Entity{
             if(!h || (h.heldResource != null && h.heldResource.resource != resourceProfile)){ return; }
 
             Owner = entity;
+        }
+
+        public override void Run(){
+            if(!isHovered){ return; }
+            EntityTooltip.instance.contents["resource"].SetText($"{quantity}");
+        }
+
+        public override void OnIsHovered(bool isHovered){
+            base.OnIsHovered(isHovered);
+            if(isHovered){
+                EntityTooltip tooltipInstance = EntityTooltip.instance;
+                tooltipInstance.tooltip.AddContents(
+                    tooltipInstance.ContentsUIPrefab,
+                    tooltipInstance.TooltipObject, 
+                    ref tooltipInstance.contents, 
+                    new EntityTooltip.Contents("resource", tooltipInstance.resourceColour, resourceProfile.icon, $"{quantity}")
+                );
+                tooltipInstance.contents["resource"].SetPercent(1);
+            }
         }
 
         protected override void Start(){

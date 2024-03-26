@@ -204,6 +204,7 @@ MonoBehaviour:
   _description: 'Resource
 
 '
+  entityAttributeIcons: []
   spawnSettings:
     animationSettings:
       curve:

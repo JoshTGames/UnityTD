@@ -202,6 +202,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: Coin
   _description: Currency
+  entityAttributeIcons: []
   spawnSettings:
     animationSettings:
       curve:

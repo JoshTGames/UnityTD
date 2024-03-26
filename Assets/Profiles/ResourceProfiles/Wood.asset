@@ -10,5 +10,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 876716fd21caa6142ab8f7d573385b51, type: 3}
-  m_Name: Coin
+  m_Name: Wood
   m_EditorClassIdentifier: 
+  icon: {fileID: 21300000, guid: 4422f9d2da461984483c1e9ccd1211af, type: 3}

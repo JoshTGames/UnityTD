@@ -4,6 +4,7 @@ using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Resource", menuName = "ScriptableObjects/EntitySystem/New Resource")]
 public class ResourceData : ScriptableObject{
+    public Sprite icon;
     public sealed class Resource{
         public ResourceData resource;
         public int quantity;

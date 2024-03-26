@@ -3,7 +3,7 @@ using System.Transactions;
 using AstralCandle.Entity;
 using UnityEngine;
 public class Keep : EntityDefensiveStructure, IStorage{
-    public Dictionary<ResourceData, int> resources = new();
+    public static Dictionary<ResourceData, int> resources = new();
 
 
     public Keep(int ownerId) : base(ownerId){}

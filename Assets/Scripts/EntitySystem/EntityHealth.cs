@@ -155,9 +155,10 @@ namespace AstralCandle.Entity{
                 float rndZ = UnityEngine.Random.Range(-_collider.bounds.extents.z, _collider.bounds.extents.z);
                 Vector3 startPos = _collider.bounds.center + new Vector3(rndX, -_collider.bounds.extents.y, rndZ);
 
-                int quantityToDrop = UnityEngine.Random.Range(drop.quantity.min, drop.quantity.max);
                 EntityResource r = Instantiate(drop.resource, startPos, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform);
                 r.transform.position += new Vector3(0, r.GetComponent<Collider>().bounds.extents.y);
+
+                int quantityToDrop = UnityEngine.Random.Range(drop.quantity.min, drop.quantity.max + 1);
                 r.quantity = quantityToDrop;
             }
         }

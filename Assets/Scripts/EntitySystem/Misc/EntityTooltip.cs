@@ -26,6 +26,8 @@ namespace AstralCandle.TowerDefence{
         [Header("Game Settings")]
         public TooltipData healthData;
         public TooltipData occupantData;
+        [ColorUsage(showAlpha: false)]
+        public Color resourceColour = Color.grey;
         Camera cam;
 
 
@@ -111,7 +113,6 @@ namespace AstralCandle.TowerDefence{
             if(tooltip == null){ return; }
 
             Vector2 mousePos = ClampToScreen(PlayerControls.instance.cursorPosition);
-            
 
             float pivotX = Mathf.Clamp01(mousePos.x / Screen.width);
             float pivotY = Mathf.Clamp01(mousePos.y / Screen.height);
@@ -200,6 +201,11 @@ namespace AstralCandle.TowerDefence{
                     content.CreateContents(contentsUIPrefab, tooltipObject);
                     contents.Add(content.id, content); // Add object to contents dictionary
                 }
+            }
+
+            public void RemoveContent(ref Dictionary<string, Contents> contents, string id){
+                Destroy(contents[id].spawnedObject.gameObject);
+                contents.Remove(id);
             }
 
             public void AddAttribute(params Sprite[] sprites){
