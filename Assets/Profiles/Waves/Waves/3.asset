@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ecd5ca0c6f7084c9ee7d5f9c0f17a1, type: 3}
   m_Name: 3
   m_EditorClassIdentifier: 
-  intermission: 60
+  intermission: 30
   intermissionColour: {r: 0, g: 0.5556996, b: 1, a: 1}
   waveColour: {r: 0, g: 1, b: 0.5294118, a: 1}
   waveData:

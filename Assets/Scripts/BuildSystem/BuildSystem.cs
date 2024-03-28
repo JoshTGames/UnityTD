@@ -50,7 +50,7 @@ public class BuildSystem{
 
     public bool Build(){
         if(!CanPlace){ return false; }
-        foreach(BuildProfile.Resource r in profile.RequiredResources){ Keep.resources[r.resource] -= r.quantity; }
+        foreach(BuildProfile.Resource r in profile.RequiredResources){ Keep.instance.resources[r.resource] -= r.quantity; }
         return true;
     }
 

@@ -23,8 +23,8 @@ public class BuildProfile : ScriptableObject{
     public bool CanAfford(){
         for(int i = 0; i < requiredResources.Length; i++){
             Resource r = requiredResources[i];
-            if(!Keep.resources.ContainsKey(r.resource)){ return false; }
-            else if(Keep.resources[r.resource] < r.quantity){ return false; }
+            if(!Keep.instance.resources.ContainsKey(r.resource)){ return false; }
+            else if(Keep.instance.resources[r.resource] < r.quantity){ return false; }
         }
         return true;        
     }

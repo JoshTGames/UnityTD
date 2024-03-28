@@ -8,6 +8,11 @@ using AstralCandle.TowerDefence;
 using System.Linq;
 using AstralCandle.Entity;
 
+/*
+--- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
+        --- Copyright ©️ 2024-2025 AstralCandle Games. All Rights Reserved. ---
+*/
+
 public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler{
     [SerializeField] float rotationDuration;
     [SerializeField] Color selectionColour = Color.grey, clickedColour = Color.black, disabledColour;
@@ -71,7 +76,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         for(int i = 0; i < profile.RequiredResources.Length; i++){
             BuildProfile.Resource r = profile.RequiredResources[i];
             int currentQuantity = 0;
-            if(Keep.resources.ContainsKey(r.resource)){ currentQuantity = Mathf.Clamp(Keep.resources[r.resource], 0, r.quantity); }
+            if(Keep.instance.resources.ContainsKey(r.resource)){ currentQuantity = Mathf.Clamp(Keep.instance.resources[r.resource], 0, r.quantity); }
             EntityTooltip.Contents content = new EntityTooltip.Contents(r.resource.name, EntityTooltip.instance.resourceColour, r.resource.icon, $"{currentQuantity}/{r.quantity}");
 
             instance.tooltip.AddContents(instance.ContentsUIPrefab, instance.TooltipObject, ref instance.contents, content);
@@ -116,7 +121,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         for(int i = 0; i < profile.RequiredResources.Length && BuildUI.instance.isOpen && EntityTooltip.instance.tooltip != null; i++){
             BuildProfile.Resource r = profile.RequiredResources[i];
             int currentQuantity = 0;
-            if(Keep.resources.ContainsKey(r.resource)){ currentQuantity = Mathf.Clamp(Keep.resources[r.resource], 0, r.quantity); }
+            if(Keep.instance.resources.ContainsKey(r.resource)){ currentQuantity = Mathf.Clamp(Keep.instance.resources[r.resource], 0, r.quantity); }
             instance.contents[r.resource.name].SetPercent((float)currentQuantity / r.quantity);
             instance.contents[r.resource.name].SetText($"{currentQuantity}/{r.quantity}");
         }

@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 
@@ -47,6 +50,26 @@ namespace AstralCandle.Entity{
             this.selectionObject = selectionObject;
         }
 
+        public List<TEntityObj> GetAllOfType(params TEntityObj[] _type){
+            List<TEntityObj> entities = new();
+            List<TEntityObj> allE = allEntities.ToList();
+            for(int i = 0; i < allE.Count; i++){
+                foreach(TEntityObj e in _type){
+                    bool isSameType = allE[i].GetType() == e.GetType();
+                    if(isSameType){ entities.Add(allE[i]); }
+                }
+            }
+            return entities;
+        }
+
+        public bool HasTypeInSelected(Type _type){
+            List<TEntityObj> selectedE = selected.ToList();
+            for(int i = 0; i < selectedE.Count; i++){
+                if(selectedE[i].GetType() == _type){ return true; }
+            }
+            return false;
+        }
+
         
         #region Selection functions
         /// <summary>
@@ -55,7 +78,7 @@ namespace AstralCandle.Entity{
         /// <param name="entity">The entity we want to add to data set</param>
         public void ClickSelect(TEntityObj entity){
             DeselectAll();
-            if(entity == null){ return; }
+            if(entity == null || !(entity as Entity).isEnabled){ return; }
             ISelectable selectable = entity as ISelectable;            
             selected.Add(entity);
             selectable?.OnIsSelected(selectionObject);
@@ -66,7 +89,7 @@ namespace AstralCandle.Entity{
         /// </summary>
         /// <param name="entity">The entity we want to add or potentially remove from the data set</param>
         public void ShiftClickSelectEntity(TEntityObj entity){
-            if(entity == null){ return; }
+            if(entity == null || !(entity as Entity).isEnabled){ return; }
             ISelectable selectable = (ISelectable)entity;
 
             switch(selected.Contains(entity)){
@@ -90,6 +113,8 @@ namespace AstralCandle.Entity{
             ISelectable selectable = (ISelectable)entity;
 
             if(!alternateMode && !selected.Contains(entity)){ 
+                if(!(entity as Entity).isEnabled){ return; }
+
                 selected.Add(entity);                 
                 selectable?.OnIsSelected(selectionObject);
             }

@@ -14,6 +14,12 @@ namespace AstralCandle.Entity{
         /// <summary>
         /// Attempts to remove this entity from the loop
         /// </summary>
-        public void RemoveEntityFromWave(int id) => GameLoop.instance?.CurrentGame?.RemoveEntity(id);
+        public void RemoveEntityFromWave(int id){
+            if(GameLoop.instance?.Wave >= 0){
+                GameLoop.instance?.CurrentGame?.RemoveEntity(id);
+                return;
+            }
+            Tutorial.instance?.TutorialGame?.RemoveEntity(id);
+        }
     }
 }

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using AstralCandle.Animation;
 using TMPro;
+using Unity.VisualScripting;
 
 /*
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
@@ -10,6 +11,7 @@ using TMPro;
 
 public class ProgressBar : MonoBehaviour{
     public static ProgressBar instance;
+    [SerializeField] AnimationInterpolation easeInAnimation;
 
     [Header("Progress Settings")]
     [SerializeField] AnimationInterpolation animationSettings;
@@ -70,7 +72,15 @@ public class ProgressBar : MonoBehaviour{
         delayedBar.fillAmount = Mathf.SmoothDamp(delayedBar.fillAmount, bar.fillAmount, ref smoothVelocity, delayedSmoothing);
     }
 
-    void LateUpdate() => UpdateProgress();
+    void LateUpdate(){
+        UpdateProgress();
+        float value = easeInAnimation.Play(GameLoop.instance?.CurrentGame == null);
+        transform.GetChild(0).localScale = Vector3.one * value;
+        transform.GetChild(0).gameObject.SetActive(easeInAnimation.percent > 0);
+    }
     private void Awake() => instance = this;
-    private void Start() => _animator = GetComponent<Animator>();
+    private void Start(){
+        _animator = transform.GetChild(0).GetComponent<Animator>();
+        easeInAnimation.ResetTime();
+    }
 }

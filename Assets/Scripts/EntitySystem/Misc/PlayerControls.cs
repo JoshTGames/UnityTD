@@ -268,7 +268,7 @@ public class PlayerControls : MonoBehaviour{
                     entity.SetTask(hoveredEntity.transform.position, () => storage.Deposit(resourceData, pickup));                    
                     continue;
                 }
-                else if(resourceData == null){
+                else if(resourceData == null && hoveredEntity.isEnabled){
                     // Entering a structure
                     entity.SetTask(hoveredEntity.transform.position, () => structure.AddOccupant(entity as Entity));
                 }
@@ -348,6 +348,12 @@ public class PlayerControls : MonoBehaviour{
         buildUI.ToggleOpen();
         entities.DeselectAll();
     }
+    
+    /// <summary>
+    /// Attempts to skip the dialogue 
+    /// </summary>
+    public void OnPassDialogue(InputValue value) => DialogueSystem.instance.CurrentDialogue?.CompleteDialogue();
+    
     [Serializable] public class DragSettings{
         [SerializeField, Tooltip("The UI visual element")] Image dragUI;
         

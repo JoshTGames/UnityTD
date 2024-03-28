@@ -22,7 +22,8 @@ public class GameLoop : MonoBehaviour{
     [SerializeField] Settings settings;
     [SerializeField] WaveProfile[] waves;
     [SerializeField] EntityCharacter humanEntity;
-    [SerializeField] int humansToStartWith = 4;
+    [SerializeField] int humansToStartWith = 2;
+    [SerializeField] bool startOnPlay;
     #endregion
     #region COSMETIC
     Vector3 previousScale, targetScale;
@@ -31,7 +32,7 @@ public class GameLoop : MonoBehaviour{
     #region PRIVATE VARIABLES
     const int NUMBER_OF_SPAWN_DIRECTIONS = 4; // UP, DOWN, LEFT, RIGHT
     readonly int[] RESOURCE_NODE_DIRECTIONS = new int[4]{0, 90, 180, 270};
-    int _wave = 0;
+    int _wave = -1;
     
     float _mapScale, previousMapScale;    
     #endregion
@@ -66,8 +67,6 @@ public class GameLoop : MonoBehaviour{
         private set;
     }
     
-
-
     //--- FUNCTIONS
 
     /// <summary>
@@ -78,9 +77,7 @@ public class GameLoop : MonoBehaviour{
         map.localScale = Vector3.LerpUnclamped(previousScale, targetScale, value);
     }
 
-    void NewGame(){
-        CurrentGame = new Game(waves[Wave], map.position, MapScale, (Wave + 1).ToString());
-
+    public List<Vector3> CalculateResourceSpawnLocations(){
         // Calculate resource spawning locations
         HashSet<Vector3> resourceSpawnLocations = new();
         int maxMapSize = (int)Grid.RoundToGrid(MapScale / 2, settings.cellSize) - settings.cellSize;
@@ -95,43 +92,62 @@ public class GameLoop : MonoBehaviour{
                 resourceSpawnLocations.Add(new(-i, 0, z));
             }
         }
+        System.Random random = new();
+        return resourceSpawnLocations.OrderBy(e => random.NextDouble()).ToList(); // Shuffles list
+    }
+
+    public void SpawnEntities(ref List<Vector3> spawnPositions, params Entity[] entities){
+        Transform parentFolder = GameObject.Find("_GAME_RESOURCES_").transform;
+        spawnPositions ??= CalculateResourceSpawnLocations();
+
+        foreach(Entity e in entities){
+            if(spawnPositions.Count <= 0){ continue; }
+
+            Vector3 position = spawnPositions[0];
+            spawnPositions.RemoveAt(0);
+
+            Entity newE = Instantiate(e, position, Quaternion.identity, parentFolder);
+            PlayerControls.instance.entities.SubscribeToEntities(newE);
+            Collider col = newE.GetComponent<Collider>();
+
+            Vector3 newPos = position;
+            newPos.y = (map.localScale.y /2) + col.bounds.extents.y;
+            newE.transform.position = newPos;
+
+            Vector3 euler = newE.transform.eulerAngles;
+            euler.y = RESOURCE_NODE_DIRECTIONS[UnityEngine.Random.Range(0, RESOURCE_NODE_DIRECTIONS.Length-1)];
+            newE.transform.eulerAngles = euler;
+        }
+    }
+
+    public void SpawnEntities(ref List<Vector3> spawnPositions, params ResourceSettings[] settings){
+        spawnPositions ??= CalculateResourceSpawnLocations();
+
+        for(int i = 0; i < settings.Length; i++){
+            ResourceSettings r = settings[i];
+            int fillAmount = Mathf.FloorToInt(spawnPositions.Count * r.resourcePopulation);
+
+            for(int x = 0; x < fillAmount && x < spawnPositions.Count; x++){
+                SpawnEntities(ref spawnPositions, r.resourceNode);
+            }
+        }
+    }
+
+    public void NewGame(){     
+        Wave++;
+
+        MapScale = Utilities.Remap(Wave + 1, 0, waves.Length, settings.mapSize.min, settings.mapSize.max);
+        CurrentGame = new Game(waves[Wave], map.position, MapScale, (Wave + 1).ToString());
+
         // Spawn resources
         Transform parentFolder = GameObject.Find("_GAME_RESOURCES_").transform;
-
-        System.Random random = new();
-        List<Vector3> rLocations = resourceSpawnLocations.OrderBy(e => random.NextDouble()).ToList(); // Shuffles
-        int locationIndex = 0;
-        foreach(ResourceSettings resource in settings.resources){
-            int fillAmount = Mathf.FloorToInt(rLocations.Count * resource.resourcePopulation);
-            for(int i = 0; i < fillAmount; i++){
-                if(locationIndex >= rLocations.Count){ continue; }
-                
-                Vector3 pos = rLocations[locationIndex];
-                EntityResourceNode r = Instantiate(resource.resourceNode, pos, Quaternion.identity, parentFolder);
-                Collider col = r.GetComponent<Collider>();
-                Vector3 newPos = pos;
-                newPos.y = (map.localScale.y / 2) + col.bounds.extents.y;
-                r.transform.position = newPos;
-                Vector3 rEuler = r.transform.eulerAngles;
-                rEuler.y = RESOURCE_NODE_DIRECTIONS[UnityEngine.Random.Range(0, RESOURCE_NODE_DIRECTIONS.Length-1)];
-                r.transform.eulerAngles = rEuler;
-
-                locationIndex++;
-            }
-        }        
+        List<Vector3> rLocations = CalculateResourceSpawnLocations();
+        SpawnEntities(ref rLocations, settings.resources);
 
         // Spawn starting humans
         if(Wave == 0){
-            for(int i = locationIndex; i < locationIndex + 4; i++){                
-                Vector3 pos = rLocations[i % rLocations.Count];
-                EntityCharacter c = Instantiate(humanEntity, pos, Quaternion.identity, parentFolder);
-                Collider col = c.GetComponent<Collider>();
-                Vector3 newPos = pos;
-                newPos.y = (map.localScale.y / 2) + col.bounds.extents.y;
-                c.transform.position = newPos;
-                Vector3 cEuler = c.transform.eulerAngles;
-                cEuler.y = RESOURCE_NODE_DIRECTIONS[UnityEngine.Random.Range(0, RESOURCE_NODE_DIRECTIONS.Length-1)];
-                c.transform.eulerAngles = cEuler;
+            for(int i = 0; i < humansToStartWith; i++){
+                SpawnEntities(ref rLocations, humanEntity);
             }
         }
     }
@@ -148,19 +164,17 @@ public class GameLoop : MonoBehaviour{
     /// <summary>
     /// Initiates this script
     /// </summary>
-    void Start(){
-        MapScale = Utilities.Remap(Wave + 1, 1, waves.Length, settings.mapSize.min, settings.mapSize.max);
+    void Start(){        
+        MapScale = Utilities.Remap(Wave + 1, 0, waves.Length, settings.mapSize.min, settings.mapSize.max);
         previousMapScale = Grid.RoundToGrid((float)settings.mapSize.min * settings.resourceSpawnSubtractMin, settings.cellSize);
-        NewGame();
+        if(startOnPlay){ NewGame(); }
     }
     private void Update() {
         PlayMapAnimation();
 
         // Ensures the game is always running
-        if(CurrentGame.Run() && Wave < waves.Length-1){
-            Wave++;
+        if(CurrentGame != null && CurrentGame.Run() && Wave < waves.Length-1){            
             previousMapScale = MapScale;
-            MapScale = Utilities.Remap(Wave + 1, 1, waves.Length, settings.mapSize.min, settings.mapSize.max);            
             NewGame();
             return;
         }

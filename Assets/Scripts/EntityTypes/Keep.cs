@@ -3,7 +3,8 @@ using AstralCandle.Entity;
 using UnityEngine;
 using UnityEngine.Events;
 public class Keep : EntityDefensiveStructure, IStorage{
-    public static Dictionary<ResourceData, int> resources = new();
+    public static Keep instance;
+    public Dictionary<ResourceData, int> resources = new();
     [SerializeField] OccupantGeneration occupantGenerationSettings;
     
 
@@ -34,6 +35,7 @@ public class Keep : EntityDefensiveStructure, IStorage{
     protected override void Start(){
         base.Start();
         resources = new();
+        instance = this;
     }
 
     [System.Serializable] public class OccupantGeneration{
@@ -51,14 +53,14 @@ public class Keep : EntityDefensiveStructure, IStorage{
         /// <param name="occupants">The concurrent number of occupants in this structure</param>
         public void SpawnOccupant(int maxOccupants, ref int occupants){
             elapsedOccupantGenerationTimer -= Time.fixedDeltaTime;
-            if(!resources.ContainsKey(resource) || resources[resource] < quantity || occupants >= maxOccupants){
+            if(!instance.resources.ContainsKey(resource) || instance.resources[resource] < quantity || occupants >= maxOccupants){
                 elapsedOccupantGenerationTimer = occupantGenerationTimer;
                 return;
             }
 
-            if(elapsedOccupantGenerationTimer <= 0){
+            if(elapsedOccupantGenerationTimer <= 0 && instance.resources[resource] >= quantity){
                 elapsedOccupantGenerationTimer = occupantGenerationTimer;
-                resources[resource] -= quantity;
+                instance.resources[resource] -= quantity;
                 occupants++;
                 onOccupantGeneration?.Invoke();
             }

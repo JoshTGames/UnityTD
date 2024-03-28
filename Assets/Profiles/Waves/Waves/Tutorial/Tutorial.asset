@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1ecd5ca0c6f7084c9ee7d5f9c0f17a1, type: 3}
+  m_Name: Tutorial
+  m_EditorClassIdentifier: 
+  intermission: 0
+  intermissionColour: {r: 0, g: 0.5556996, b: 1, a: 1}
+  waveColour: {r: 0, g: 1, b: 0.5294118, a: 1}
+  waveData:
+  - group: {fileID: 11400000, guid: 630f496c31ece7841b97c8ceea8c54ff, type: 2}
+    quantity: 1
+    spawnDelay: 2
+    spawnDirection: 1
+  - group: {fileID: 11400000, guid: 076db27ce372fe04e8f00ad3502e62a1, type: 2}
+    quantity: 1
+    spawnDelay: 3
+    spawnDirection: 2
+  - group: {fileID: 11400000, guid: 630f496c31ece7841b97c8ceea8c54ff, type: 2}
+    quantity: 1
+    spawnDelay: 1
+    spawnDirection: 0
+  - group: {fileID: 11400000, guid: 630f496c31ece7841b97c8ceea8c54ff, type: 2}
+    quantity: 2
+    spawnDelay: 1
+    spawnDirection: 3

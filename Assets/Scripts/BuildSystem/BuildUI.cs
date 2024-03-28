@@ -88,8 +88,8 @@ public class BuildUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler{
         }
 
         foreach(ResourceStash s in miscSettings.stash){
-            if(!Keep.resources.ContainsKey(s.associatedResource)){ continue; }
-            s.label.text = $"{Keep.resources[s.associatedResource]}";
+            if(!Keep.instance.resources.ContainsKey(s.associatedResource)){ continue; }
+            s.label.text = $"{Keep.instance.resources[s.associatedResource]}";
         }        
     }
 
