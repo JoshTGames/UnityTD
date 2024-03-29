@@ -13,10 +13,8 @@ MonoBehaviour:
   m_Name: 28
   m_EditorClassIdentifier: 
   persona: {fileID: 11400000, guid: 73757250926bc7c4a8c4a1416ebd1b67, type: 2}
-  check: {fileID: 0}
+  check: {fileID: 11400000, guid: 629ba898c2c9e6c4980acfb65bd6653f, type: 2}
   preFunction: {fileID: 0}
   postFunction: {fileID: 0}
   showArt: 0
-  text: Well done! Now we have another structure we can command our people into and
-    use as extra fire power. As a bonus tip, you can cancel building placements with
-    RIGHT CLICK when deciding where to place a structure.
+  text: Now position it wherever you please and CLICK again to finalise the placement.

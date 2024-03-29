@@ -140,6 +140,7 @@ public class DialogueSystem : MonoBehaviour{
         /// <param name="character"></param>
         /// <param name="pitch"></param>
         public void Play(char character, float pitch = 1){
+            character = character.ToString().ToLower()[0]; // Converts the character to lower case
             if(!source || !characters.ContainsKey(character)){ return; }
             source.clip = characters[character];
             source.pitch = pitch;

@@ -13,10 +13,9 @@ MonoBehaviour:
   m_Name: 26
   m_EditorClassIdentifier: 
   persona: {fileID: 11400000, guid: 73757250926bc7c4a8c4a1416ebd1b67, type: 2}
-  check: {fileID: 11400000, guid: 3f087309b812bfa41b5709e08f25262b, type: 2}
+  check: {fileID: 11400000, guid: 2f5bb85aa6426d849a1756a18368e52f, type: 2}
   preFunction: {fileID: 0}
   postFunction: {fileID: 0}
   showArt: 0
-  text: Here, you can see all the structures you are able to build. As of now after
-    that fight, I believe an 'Archer Tower' is in order. To show the preview, CLICK
-    on it and using your MOUSE.
+  text: Great, with all these resources we should be able to make a tower now. To
+    open up the build menu, press B

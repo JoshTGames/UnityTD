@@ -5813,6 +5813,8 @@ MonoBehaviour:
     position: 0
   - dialogue: {fileID: 11400000, guid: 0d347682643b9fe4f8f6e503ff97ec01, type: 2}
     position: 0
+  - dialogue: {fileID: 11400000, guid: 1494136b067c49944a8b217f3ab375fc, type: 2}
+    position: 0
   - dialogue: {fileID: 11400000, guid: c2a6e7a70187f794e89e3477ca0b37af, type: 2}
     position: 0
   - dialogue: {fileID: 11400000, guid: b9c2c2f4eed209544b2abab44dc49d52, type: 2}
@@ -10805,6 +10807,7 @@ GameObject:
   - component: {fileID: 1915987095}
   - component: {fileID: 1915987096}
   - component: {fileID: 1915987098}
+  - component: {fileID: 1915987099}
   m_Layer: 0
   m_Name: DialogueSystem
   m_TagString: Untagged
@@ -10895,8 +10898,60 @@ MonoBehaviour:
         m_PersistentCalls:
           m_Calls: []
   textToAudio:
-    source: {fileID: 0}
-    TTAKeyValues: []
+    source: {fileID: 1915987099}
+    TTAKeyValues:
+    - character: 97
+      clip: {fileID: 8300000, guid: 6cbf3ad7348ebe847be58372dee6ab4b, type: 3}
+    - character: 98
+      clip: {fileID: 8300000, guid: 3ae9a040f0a044d4ca6f0b8a1b946477, type: 3}
+    - character: 99
+      clip: {fileID: 8300000, guid: 1287788e2b3ae6a469f8d22adf5b7ee6, type: 3}
+    - character: 100
+      clip: {fileID: 8300000, guid: d6276ed3c3f723143adf7a382270cb25, type: 3}
+    - character: 101
+      clip: {fileID: 8300000, guid: 23a4f8d641574074999f05569c46513b, type: 3}
+    - character: 102
+      clip: {fileID: 8300000, guid: d8dce7ad415e7df4faaee3ffc4ba179d, type: 3}
+    - character: 103
+      clip: {fileID: 8300000, guid: 806e0f1a8cd0a214dbe89152ebc0b7e5, type: 3}
+    - character: 104
+      clip: {fileID: 8300000, guid: 2955512102c053346928f80d73b07353, type: 3}
+    - character: 105
+      clip: {fileID: 8300000, guid: b1f6d1b1d340aa0478c9db8f6bed9320, type: 3}
+    - character: 106
+      clip: {fileID: 8300000, guid: bdee9331ec8207148be0243bd47bc72b, type: 3}
+    - character: 107
+      clip: {fileID: 8300000, guid: b7048be30aef1874fa5326fba0bb348b, type: 3}
+    - character: 108
+      clip: {fileID: 8300000, guid: 3c8104ba2090ac24dbe0b24fc71154a4, type: 3}
+    - character: 109
+      clip: {fileID: 8300000, guid: 8a9f9f1c61f401349bfc6173f5fcbfaa, type: 3}
+    - character: 110
+      clip: {fileID: 8300000, guid: d258e4882c5353a49aa337635881e0ef, type: 3}
+    - character: 111
+      clip: {fileID: 8300000, guid: a29a228fa5e37c14dbac29b1946ab9a9, type: 3}
+    - character: 112
+      clip: {fileID: 8300000, guid: 28d49956bb0826a4f86dfcd636476e36, type: 3}
+    - character: 113
+      clip: {fileID: 8300000, guid: 33626541014cf4a4db94200bb0091e64, type: 3}
+    - character: 114
+      clip: {fileID: 8300000, guid: 69cce5751fd896e41bb58af7ffbe46e9, type: 3}
+    - character: 115
+      clip: {fileID: 8300000, guid: a8adcbc8a6a989d4eb2c37b1f417bf5d, type: 3}
+    - character: 116
+      clip: {fileID: 8300000, guid: 12df098ba7368a140995e2406cb91e6e, type: 3}
+    - character: 117
+      clip: {fileID: 8300000, guid: a69ed979be4b7f5499e41644004f1a18, type: 3}
+    - character: 118
+      clip: {fileID: 8300000, guid: 5f6c8d9a6a7a6eb41963ddb9fe0f8990, type: 3}
+    - character: 119
+      clip: {fileID: 8300000, guid: dd6ac9f546d917b41b6180909d9ffed6, type: 3}
+    - character: 120
+      clip: {fileID: 8300000, guid: 261148caf43aff24d9c9c5952a036199, type: 3}
+    - character: 121
+      clip: {fileID: 8300000, guid: 97d0d9406fd27d047a699eee3e405ab8, type: 3}
+    - character: 122
+      clip: {fileID: 8300000, guid: 49fa9992ec6d0854aa8ec4cceaee6f65, type: 3}
   shiftingSettings:
     curve:
       serializedVersion: 2
@@ -10950,6 +11005,102 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selectionColour: {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
   clickColour: {r: 0.8679245, g: 0.8679245, b: 0.8679245, a: 1}
+--- !u!82 &1915987099
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1915987094}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1964602097
 GameObject:
   m_ObjectHideFlags: 0
@@ -11900,6 +12051,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1355363590}
     m_Modifications:
+    - target: {fileID: 9129879786729323293, guid: 8775eb64adaf2984ba42848ab500773c,
+        type: 3}
+      propertyPath: occupantGenerationSettings.quantity
+      value: 15
+      objectReference: {fileID: 0}
     - target: {fileID: 9129879786729323362, guid: 8775eb64adaf2984ba42848ab500773c,
         type: 3}
       propertyPath: m_RootOrder

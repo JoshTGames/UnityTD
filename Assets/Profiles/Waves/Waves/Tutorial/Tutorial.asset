@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ecd5ca0c6f7084c9ee7d5f9c0f17a1, type: 3}
   m_Name: Tutorial
   m_EditorClassIdentifier: 
-  intermission: 0
+  intermission: 1
   intermissionColour: {r: 0, g: 0.5556996, b: 1, a: 1}
   waveColour: {r: 0, g: 1, b: 0.5294118, a: 1}
   waveData:
@@ -24,10 +24,6 @@ MonoBehaviour:
     quantity: 1
     spawnDelay: 3
     spawnDirection: 2
-  - group: {fileID: 11400000, guid: 630f496c31ece7841b97c8ceea8c54ff, type: 2}
-    quantity: 1
-    spawnDelay: 1
-    spawnDirection: 0
   - group: {fileID: 11400000, guid: 630f496c31ece7841b97c8ceea8c54ff, type: 2}
     quantity: 2
     spawnDelay: 1

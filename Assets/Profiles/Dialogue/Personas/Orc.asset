@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   art: {fileID: 0}
   colour: {r: 0.6792453, g: 0.124229826, b: 0.119005226, a: 1}
-  voice: 0.75
+  voice: 2.5
   talkingSpeed: 25
