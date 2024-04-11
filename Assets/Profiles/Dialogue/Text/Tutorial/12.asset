@@ -18,4 +18,5 @@ MonoBehaviour:
   postFunction: {fileID: 0}
   showArt: 0
   text: Here, gather some more. Please note, people can only hold 1 type of resource
-    at a time so if they are full, RIGHT CLICK the keep to deposit the resources.
+    at a time so if they are full, RIGHT CLICK the keep to deposit the resources
+    into it.

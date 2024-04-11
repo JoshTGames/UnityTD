@@ -221,8 +221,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b3f4be0d127431c4e901935ddc18946a, type: 2}
-  m_sharedMaterial: {fileID: -5097373067294758201, guid: b3f4be0d127431c4e901935ddc18946a,
+  m_fontAsset: {fileID: 11400000, guid: 050aebab7587f4f43bfa53ca3d536e0e, type: 2}
+  m_sharedMaterial: {fileID: -7416929869199235127, guid: 050aebab7587f4f43bfa53ca3d536e0e,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -433,3 +433,9 @@ MonoBehaviour:
   ditherRange: 0.8
   mesh: {fileID: 0}
   profile: {fileID: 0}
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  placementColours:
+    canPlace: {r: 0, g: 1, b: 0, a: 1}
+    cantPlace: {r: 1, g: 0, b: 0, a: 1}

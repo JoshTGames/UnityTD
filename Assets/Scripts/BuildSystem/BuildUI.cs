@@ -22,11 +22,11 @@ public class BuildUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler{
     [SerializeField] LayerMask buildingObstacleLayers;
     [SerializeField] BuildSystem.PlacementColours placementColours;
     [SerializeField] BuildProfile[] buildings;
-    
-
+    [HideInInspector] public bool enableSystem;
+    public GameLoop.AudioSettings onClickSFX;
     [HideInInspector] public bool isOpen{
         get;
-        private set;
+        set;
     }
 
     BuildSystem building;
@@ -40,6 +40,7 @@ public class BuildUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler{
     Transform slotParent;
     GameObject UI;
     Scrollbar scroll;
+    public AudioSource source {get; private set;}
     bool resetScrollValue;
 
     private void Start(){
@@ -47,6 +48,7 @@ public class BuildUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler{
 
         UI = transform.GetChild(0).gameObject;
         scroll = GetComponentInChildren<Scrollbar>();        
+        source = GetComponent<AudioSource>();
 
         slotParent = UI.GetComponentInChildren<ScrollRect>().transform.GetChild(0);
         foreach(BuildProfile structure in buildings){
@@ -95,6 +97,8 @@ public class BuildUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler{
 
 
     public void ToggleOpen(){
+        if(!enableSystem){ return; }
+
         isOpen = !isOpen;
         EntityTooltip.instance.tooltip = null;
         if(isOpen){ resetScrollValue = true; }

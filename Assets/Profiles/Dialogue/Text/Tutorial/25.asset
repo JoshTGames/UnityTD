@@ -15,7 +15,7 @@ MonoBehaviour:
   persona: {fileID: 11400000, guid: 73757250926bc7c4a8c4a1416ebd1b67, type: 2}
   check: {fileID: 11400000, guid: 479e4d443d2d31d42ab1c82e7a44a74e, type: 2}
   preFunction: {fileID: 0}
-  postFunction: {fileID: 0}
+  postFunction: {fileID: 11400000, guid: 3a72526cb41ec32448250963181174fb, type: 2}
   showArt: 0
   text: Good job! Now remember, to deposit your gatherings back at your keep. Without
     doing that you are not able to make use of the resources you have gathered.

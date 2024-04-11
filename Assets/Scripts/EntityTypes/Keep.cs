@@ -27,8 +27,10 @@ public class Keep : EntityDefensiveStructure, IStorage{
 
     protected override void OnImmortalHit(){}
 
-    public override void Run(){
-        base.Run();
+    public override void Run(GameLoop.WinLose state){
+        base.Run(state);
+        
+        if(state != GameLoop.WinLose.In_Game){ return; }
         occupantGenerationSettings.SpawnOccupant(GetMaxOccupants(), ref occupants);
     }
 

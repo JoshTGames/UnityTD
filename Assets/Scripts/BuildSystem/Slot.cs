@@ -59,6 +59,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         EntityTooltip.instance.tooltip = null;
         if(!canAfford){ return; }
         ApplyColours(clickedColour);
+        BuildUI.instance.onClickSFX.PlaySound(BuildUI.instance.source);
     }
 
     public void OnPointerUp(PointerEventData eventData){
@@ -120,6 +121,8 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         EntityTooltip instance = EntityTooltip.instance;
         for(int i = 0; i < profile.RequiredResources.Length && BuildUI.instance.isOpen && EntityTooltip.instance.tooltip != null; i++){
             BuildProfile.Resource r = profile.RequiredResources[i];
+            if(!instance.contents.ContainsKey(r.resource.name)){ continue; }
+
             int currentQuantity = 0;
             if(Keep.instance.resources.ContainsKey(r.resource)){ currentQuantity = Mathf.Clamp(Keep.instance.resources[r.resource], 0, r.quantity); }
             instance.contents[r.resource.name].SetPercent((float)currentQuantity / r.quantity);

@@ -18,7 +18,7 @@ namespace AstralCandle.Entity{
         protected int occupants;
         [SerializeField] protected Entity spawnedEntity;
         [SerializeField] protected Repair repairSettings;
-
+        public GameLoop.AudioSettings spawnSFX;
 
         protected EntityStructure(int ownerId) : base(ownerId){}
 
@@ -27,11 +27,11 @@ namespace AstralCandle.Entity{
         /// <summary>
         /// Returns the number of occupants in this structure
         /// </summary>
-        protected int GetOccupants() => occupants;
+        public int GetOccupants() => occupants;
         /// <summary>
         /// Returns the max number of occupants for this structure
         /// </summary>
-        protected int GetMaxOccupants() => maxOccupants;
+        public int GetMaxOccupants() => maxOccupants;
 
 
         public EntityERR AddOccupant(Entity entity){
@@ -57,8 +57,10 @@ namespace AstralCandle.Entity{
             return EntityERR.SUCCESS;
         }
 
-        public override void Run(){
-            base.Run();
+        public override void Run(GameLoop.WinLose state){
+            base.Run(state);
+            if(state != GameLoop.WinLose.In_Game){ return; }
+            
             repairSettings.RepairEntity(this);
             if(isHovered){
                 EntityTooltip tooltipInstance = EntityTooltip.instance;

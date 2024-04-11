@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 9129879786729323362}
   - component: {fileID: 9129879786729323363}
   - component: {fileID: 9129879786729323293}
+  - component: {fileID: 3792297718816046554}
   m_Layer: 3
   m_Name: Keep
   m_TagString: Untagged
@@ -147,12 +148,64 @@ MonoBehaviour:
   hitColour: {r: 4, g: 0, b: 0, a: 1}
   healColour: {r: 0.20787686, g: 3.3531437, b: 0.3979755, a: 1}
   dropSettings: []
+  healNoiseStep: 0.35
+  idleNoise:
+    type: []
+    cooldown:
+      min: 0
+      max: 0
+    pitch:
+      min: 1
+      max: 1
+  selectedNoise:
+    type: []
+    cooldown:
+      min: 0
+      max: 0
+    pitch:
+      min: 1
+      max: 1
+  actionNoise:
+    type:
+    - {fileID: 8300000, guid: 5fa3c3314368147439a18e33bf486d48, type: 3}
+    cooldown:
+      min: 0
+      max: 0
+    pitch:
+      min: 1
+      max: 3
+  hurtNoise:
+    type:
+    - {fileID: 8300000, guid: 2e8ad77c4bdb3a648b5b72fb3eb6b051, type: 3}
+    cooldown:
+      min: 0.5
+      max: 0.5
+    pitch:
+      min: 2
+      max: 3
+  healNoise:
+    type:
+    - {fileID: 8300000, guid: 2ac78368e3f53754c93d716e8fe1ae4e, type: 3}
+    cooldown:
+      min: 0
+      max: 0
+    pitch:
+      min: 1
+      max: 3
   maxOccupants: 10
   spawnedEntity: {fileID: 3666201108349969699, guid: 0d90e12d81b05394c9e4a2ca5a13ed9d,
     type: 3}
   repairSettings:
     healAmount: 0.05
     timeTillHeal: 3
+  spawnSFX:
+    type: []
+    cooldown:
+      min: 0
+      max: 0
+    pitch:
+      min: 1
+      max: 1
   entityLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -243,6 +296,102 @@ MonoBehaviour:
     onOccupantGeneration:
       m_PersistentCalls:
         m_Calls: []
+--- !u!82 &3792297718816046554
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9129879786729323365}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 0.5
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &9129879786878118429
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,7 +15,8 @@ MonoBehaviour:
   persona: {fileID: 11400000, guid: 73757250926bc7c4a8c4a1416ebd1b67, type: 2}
   check: {fileID: 0}
   preFunction: {fileID: 0}
+  postFunction: {fileID: 0}
   showArt: 0
   text: 'Perfect! Now that they are selected we now have the ability to command them
     to perform a variety of tasks for us. You can also CLICK and DRAG your mouse
-    to select on mass. '
+    to select multiple people and objects. '

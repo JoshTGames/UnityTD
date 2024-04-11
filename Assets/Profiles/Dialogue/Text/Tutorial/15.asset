@@ -15,7 +15,8 @@ MonoBehaviour:
   persona: {fileID: 11400000, guid: 73757250926bc7c4a8c4a1416ebd1b67, type: 2}
   check: {fileID: 0}
   preFunction: {fileID: 0}
+  postFunction: {fileID: 0}
   showArt: 0
-  text: Its important to note that right clicking the keep while a person is holding
+  text: It's important to note that right clicking the keep while a person is holding
     something will firstly make them stash the resources into the keep. A second
     right click will be required to interact with the keep afterwards.

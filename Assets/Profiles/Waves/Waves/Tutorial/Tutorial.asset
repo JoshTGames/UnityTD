@@ -20,8 +20,8 @@ MonoBehaviour:
     quantity: 1
     spawnDelay: 2
     spawnDirection: 1
-  - group: {fileID: 11400000, guid: 076db27ce372fe04e8f00ad3502e62a1, type: 2}
-    quantity: 1
+  - group: {fileID: 11400000, guid: 630f496c31ece7841b97c8ceea8c54ff, type: 2}
+    quantity: 2
     spawnDelay: 3
     spawnDirection: 2
   - group: {fileID: 11400000, guid: 630f496c31ece7841b97c8ceea8c54ff, type: 2}

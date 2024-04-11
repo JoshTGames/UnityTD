@@ -15,6 +15,7 @@ MonoBehaviour:
   persona: {fileID: 11400000, guid: 3474cfa5c2f565d4f9c5b08e216d1d4b, type: 2}
   check: {fileID: 0}
   preFunction: {fileID: 0}
+  postFunction: {fileID: 0}
   showArt: 0
   text: Not that you have a say in this, but mind if we pay you a visit? We most
-    certainly wont destroy everything you humans own... Heh heh heh
+    certainly won't destroy everything you humans own... Heh heh heh

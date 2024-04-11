@@ -20,13 +20,18 @@ namespace AstralCandle.Entity{
         ContextSteering steering;
         Animator animator;
         
+        
 
         /// <summary>
         /// If a task is present, the entity will try and perform the task
         /// </summary>
-        protected Task entityTask{
-            get;
-            private set;
+        Task entityTask;
+        protected Task EntityTask{
+            get => entityTask;
+            private set{
+                if(value == entityTask){ return; }
+                entityTask = value;
+            }
         }
         
         public static readonly int IDLE = Animator.StringToHash("Idle");
@@ -50,7 +55,7 @@ namespace AstralCandle.Entity{
         /// <param name="success">The error code dictating if the action was successful</param>
         /// <returns>true/false</returns>
         bool CheckAndRemoveTask(EntityERR success){
-            float dist = Vector3.Distance(entityTask.position, transform.position);
+            float dist = Vector3.Distance(EntityTask.position, transform.position);
             if(dist <= aISettings.deltaDistanceToTarget){ return true; }
             else if(success != EntityERR.NOT_IN_RANGE && success != EntityERR.UNDER_COOLDOWN){ return true; } // If task was successful or not actionable, then remove it
             return false;
@@ -58,22 +63,24 @@ namespace AstralCandle.Entity{
 
         public void SetTask(Vector3 position, Func<EntityERR> action = null){
             position.y = transform.position.y;
-            entityTask = new Task(position, action);
+            EntityTask = new Task(position, action);
         }
         public float GetInteractRadius() => interactRadius;
         
-        public override void Run(){
-            base.Run();
-            if(entityTask != null){                
-                EntityERR success = entityTask.RunTask(transform.position, aISettings.deltaDistanceToTarget, steering);
+        public override void Run(GameLoop.WinLose state){
+            base.Run(state);
+            if(state != GameLoop.WinLose.In_Game){ return; }
+            
+            if(EntityTask != null){                
+                EntityERR success = EntityTask.RunTask(transform.position, aISettings.deltaDistanceToTarget, steering);
                 
                 if(CheckAndRemoveTask(success)){ 
-                    entityTask = null;
+                    EntityTask = null;
                     return;
                 }               
 
                 // Move character
-                transform.position += entityTask.moveDirection * (moveSpeed * Time.fixedDeltaTime);
+                transform.position += EntityTask.moveDirection * (moveSpeed * Time.fixedDeltaTime);
             }            
         }
 
@@ -106,8 +113,8 @@ namespace AstralCandle.Entity{
                 Handles.DrawDottedLine(detectionRingPosition, detectionRingPosition + direction * aISettings.steeringCircleRadius, 5f);
             }
             Handles.color = Color.cyan;
-            if(entityTask != null){
-                Handles.DrawLine(detectionRingPosition, detectionRingPosition + entityTask.moveDirection * aISettings.steeringCircleRadius, 2f);
+            if(EntityTask != null){
+                Handles.DrawLine(detectionRingPosition, detectionRingPosition + EntityTask.moveDirection * aISettings.steeringCircleRadius, 2f);
             }
 
             // Interact radius

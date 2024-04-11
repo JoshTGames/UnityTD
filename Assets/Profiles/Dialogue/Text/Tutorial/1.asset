@@ -15,6 +15,7 @@ MonoBehaviour:
   persona: {fileID: 11400000, guid: 73757250926bc7c4a8c4a1416ebd1b67, type: 2}
   check: {fileID: 0}
   preFunction: {fileID: 11400000, guid: 1c79f5bbe7a0b3a409279a14ef43672e, type: 2}
+  postFunction: {fileID: 0}
   showArt: 0
-  text: My sincerest apologies my majesty. Our people and land have dwindled to nearly
-    nothing due to these Orcs.
+  text: My sincerest apologies your majesty. Our people and land have dwindled to
+    nearly nothing due to these Orcs.

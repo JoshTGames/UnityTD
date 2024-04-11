@@ -10,8 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e840305c736196a4f8a27ffc7afefe11, type: 3}
-  m_Name: OrcDuo
+  m_Name: Tutorial_OrcUno
   m_EditorClassIdentifier: 
   entities:
-  - {fileID: 6038716992477054934, guid: 7c32382c961f85540acf0d5470602f42, type: 3}
   - {fileID: 6038716992477054934, guid: 7c32382c961f85540acf0d5470602f42, type: 3}

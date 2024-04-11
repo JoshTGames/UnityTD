@@ -17,5 +17,5 @@ MonoBehaviour:
   preFunction: {fileID: 0}
   postFunction: {fileID: 11400000, guid: ded0e8c0e606beb47a4a7b5f38f37ddd, type: 2}
   showArt: 0
-  text: Luckily we have resources all around us. With the person selected, try clearing
-    these resources by RIGHT CLICKING on the tree.
+  text: Luckily we have a variety of resources around us. With a person selected,
+    try clearing these resources by RIGHT CLICKING on a tree.

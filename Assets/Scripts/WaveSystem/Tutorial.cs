@@ -21,6 +21,7 @@ public class Tutorial : MonoBehaviour{
 
     bool ran;
     private void Update() {
+        if(PlayerControls.instance.Paused){ return; }
         if(playTutorialWave && TutorialGame.Run()){ CompletedWave = true; }
 
         if(!DialogueSystem.instance || !GameLoop.instance || GameLoop.instance.Wave >=0 || ran){ return; }
@@ -30,5 +31,8 @@ public class Tutorial : MonoBehaviour{
         TutorialGame = new GameLoop.Game(tutorialWave, PlayerControls.instance.Map.transform.position, GameLoop.instance.MapScale, tutorialWave.name);
     }
 
-    private void Start() => instance = this;
+    private void Start(){
+        instance = this;
+        TutorialGame = null;
+    }
 }

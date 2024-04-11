@@ -15,6 +15,7 @@ MonoBehaviour:
   persona: {fileID: 11400000, guid: 73757250926bc7c4a8c4a1416ebd1b67, type: 2}
   check: {fileID: 11400000, guid: 3a6b297ed0078f347b0bf928524bb13e, type: 2}
   preFunction: {fileID: 11400000, guid: 117102d1c50cdc9488bbaa2c2fc3fc6d, type: 2}
+  postFunction: {fileID: 0}
   showArt: 0
   text: Now, we need you being more than just a spectator to help win back our land.
-    So lets try commanding our people. Try LEFT CLICKING this person.
+    So let's try commanding our people. Try LEFT CLICKING this person.

@@ -16,6 +16,7 @@ namespace AstralCandle.Entity{
         public int quantity;
         [SerializeField, Tooltip("Controls the glow values of this item")] float glowFrequency, glowAmplitude;
         [SerializeField] AnimationInterpolation movementInterpolation;
+        [SerializeField] GameLoop.AudioSettings pickupNoise;
 
         Vector3 previousPosition;
         Entity owner; 
@@ -32,12 +33,13 @@ namespace AstralCandle.Entity{
 
         public void Pickup(Entity entity){
             Human h = entity as Human;
-            if(!h || (h.heldResource != null && h.heldResource.resource != resourceProfile)){ return; }
+            if(!isEnabled || !h || (h.heldResource != null && h.heldResource.resource != resourceProfile)){ return; }
 
             Owner = entity;
         }
 
-        public override void Run(){
+        public override void Run(GameLoop.WinLose state){
+            if(state != GameLoop.WinLose.In_Game){ return; }
             if(!isHovered){ return; }
             EntityTooltip.instance.contents["resource"].SetText($"{quantity}");
         }
@@ -78,6 +80,7 @@ namespace AstralCandle.Entity{
 
                 if(movementInterpolation.percent == 1){
                     (Owner as IPickup).Pickup(this);
+                    pickupNoise.PlaySound(source);
                     DestroyEntity();
                 }
             }

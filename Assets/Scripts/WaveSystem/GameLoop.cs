@@ -5,6 +5,7 @@ using UnityEditor;
 using AstralCandle.Entity;
 using System.Linq;
 using AstralCandle.Animation;
+using UnityEngine.Events;
 
 /*
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
@@ -24,6 +25,8 @@ public class GameLoop : MonoBehaviour{
     [SerializeField] EntityCharacter humanEntity;
     [SerializeField] int humansToStartWith = 2;
     [SerializeField] bool startOnPlay;
+    [SerializeField] UnityEvent Win, Lose;
+    
     #endregion
     #region COSMETIC
     Vector3 previousScale, targetScale;
@@ -35,8 +38,11 @@ public class GameLoop : MonoBehaviour{
     int _wave = -1;
     
     float _mapScale, previousMapScale;    
-    #endregion
 
+    [SerializeField] Pause pauseState;
+    [HideInInspector] public WinLose state;
+    #endregion
+     
     public float MapScale{
         get => _mapScale;
         private set{
@@ -154,9 +160,8 @@ public class GameLoop : MonoBehaviour{
 
     // RUNS ALL ENTITIES
     private void FixedUpdate() {
-        for(int i = allEntities.Count-1; i > -1; i--){
-            allEntities[i].Run();
-        }
+        if(state != WinLose.In_Game || PlayerControls.instance.Paused){ return; }
+        for(int i = allEntities.Count-1; i > -1; i--){ allEntities[i].Run(state); }
     }
 
     void Awake() => instance = this;
@@ -168,12 +173,48 @@ public class GameLoop : MonoBehaviour{
         MapScale = Utilities.Remap(Wave + 1, 0, waves.Length, settings.mapSize.min, settings.mapSize.max);
         previousMapScale = Grid.RoundToGrid((float)settings.mapSize.min * settings.resourceSpawnSubtractMin, settings.cellSize);
         if(startOnPlay){ NewGame(); }
+        pauseState.Initiate();
     }
     private void Update() {
         PlayMapAnimation();
+        pauseState.OnPause(PlayerControls.instance?.Paused == true);
+        if(PlayerControls.instance?.Paused == true){ 
+            return;
+        }
+        if((state == WinLose.Win || state == WinLose.Lose) && (Tutorial.instance.CompletedWave || startOnPlay)){ return; }
+
+        Keep keepInstance = Keep.instance;
+        bool keepExists = keepInstance;
+        bool hasOccupants = false; // Should check all structures
+        List<Entity> s = PlayerControls.instance?.entities.GetAllOfType(Keep.instance as EntityStructure);
+        foreach(Entity structure in s){
+            EntityStructure thisS = structure as EntityStructure;
+            if(!thisS){ continue; } 
+
+            if(thisS.GetOccupants() >0){
+                hasOccupants = true;
+                break;
+            }
+        }
+        bool hasHumansOnField = PlayerControls.instance?.entities.GetAllOfType(humanEntity).Count > 0;
+        
+        state = (keepExists && (hasOccupants || hasHumansOnField))? WinLose.In_Game : WinLose.Lose; // If keep exists and we either have occupants OR occupants on field
+        
+        if(Wave >= waves.Length-1 && CurrentGame.CalculateProgress() >= 1){ 
+            state = WinLose.Win; 
+            Win?.Invoke();
+            return;
+        }
+        else if(state == WinLose.Lose && (Tutorial.instance.CompletedWave || startOnPlay)){
+            Lose?.Invoke();
+            return;
+        }
+
+
+        
 
         // Ensures the game is always running
-        if(CurrentGame != null && CurrentGame.Run() && Wave < waves.Length-1){            
+        if(CurrentGame != null && CurrentGame.Run() && Wave < waves.Length-1 && state == WinLose.In_Game){            
             previousMapScale = MapScale;
             NewGame();
             return;
@@ -192,6 +233,12 @@ public class GameLoop : MonoBehaviour{
         Init,
         Break,
         Wave
+    }
+
+    public enum WinLose{
+        In_Game,
+        Win,
+        Lose
     }
 
     /// <summary>
@@ -394,4 +441,50 @@ public class GameLoop : MonoBehaviour{
         public static float FloorToGrid(float value, int cellSize) => Mathf.FloorToInt(value / cellSize) * cellSize; 
         public static Vector3 FloorToGrid(Vector3 value, int cellSize) => new Vector3(FloorToGrid(value.x, cellSize), FloorToGrid(value.y, cellSize), FloorToGrid(value.z, cellSize)); 
     }
+    [Serializable] public class Pause{
+        [Header("SFX Settings")]
+        public AudioSource source;
+        [Range(0, 1)] public float onPauseVolume = 0.05f;
+        [Range(0, 1)] public float onPausePitch = 0.65f;
+
+        public AnimationInterpolation transitionSettings;
+        [HideInInspector] public float defaultVolume;
+        [HideInInspector] public float defaultPitch;
+
+        public void Initiate(){
+            defaultVolume = source.volume;
+            defaultPitch = source.pitch;
+        }        
+        public void OnPause(bool isPaused){
+            float value = transitionSettings.Play(!isPaused);
+
+            source.volume = Mathf.LerpUnclamped(defaultVolume, onPauseVolume, value);
+            source.pitch = Mathf.LerpUnclamped(defaultPitch, onPausePitch, value);
+        }
+    }
+    [Serializable] public class AudioSettings{
+            public AudioClip[] type;
+            public Utilities.MinMaxF cooldown;
+            public Utilities.MinMaxF pitch = new Utilities.MinMaxF(1, 1);
+            public float ActualCooldown{ get; set; }
+
+            public void PlaySound(AudioSource s){
+                if(ActualCooldown > 0 || type.Length <= 0 || !s) { return; }
+                ActualCooldown = UnityEngine.Random.Range(cooldown.min, cooldown.max);
+                s.clip = type[UnityEngine.Random.Range(0, type.Length)];
+                s.pitch = UnityEngine.Random.Range(pitch.min, pitch.max);
+                s.Play();
+            }
+
+            
+            public void PlaySoundWithIncrease(AudioSource s, float value, float step = -1){
+                if(ActualCooldown > 0 || type.Length <= 0 || !s) { return; }
+                ActualCooldown = UnityEngine.Random.Range(cooldown.min, cooldown.max);
+                s.clip = type[UnityEngine.Random.Range(0, type.Length)];
+                
+                float val = Utilities.Remap(Mathf.Clamp01(value), 0, 1, pitch.min, pitch.max);
+                s.pitch = (step > 0)? (float)Math.Round(val / step, 1) * step : val;
+                s.Play();
+            }
+        }
 }

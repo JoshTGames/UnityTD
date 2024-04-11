@@ -15,6 +15,7 @@ MonoBehaviour:
   persona: {fileID: 11400000, guid: 73757250926bc7c4a8c4a1416ebd1b67, type: 2}
   check: {fileID: 11400000, guid: 479e4d443d2d31d42ab1c82e7a44a74e, type: 2}
   preFunction: {fileID: 11400000, guid: 05055e297a35c404ebf37f9039e93e16, type: 2}
+  postFunction: {fileID: 0}
   showArt: 0
-  text: Now that we have resources, we need to actually stash them so we can use
-    them for later. To do this, with all our people selected, RIGHT CLICK the keep.
+  text: Now that we have resources, we need to stash them so we can use them for
+    later. To do this, with all our people selected, RIGHT CLICK the keep.

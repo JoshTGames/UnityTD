@@ -10,6 +10,8 @@ public class Human : EntityCharacter, IPickup, IHarvest{
     [SerializeField] float smoothing = 0.1f;
     [SerializeField] LayerMask resourceLayer;
     [SerializeField] float harvestCooldown = 1;
+    [SerializeField] float resourceHoldingOffset = 1;
+    
     float elapsedTime;
 
 
@@ -33,6 +35,7 @@ public class Human : EntityCharacter, IPickup, IHarvest{
         get;
         private set;
     }
+    GameObject physicallyHeldResource;
 
     Quaternion prvLookDirection;
     Vector3 lookDirection, lookVelocity;
@@ -52,10 +55,10 @@ public class Human : EntityCharacter, IPickup, IHarvest{
         }
     }
 
-    void ManageMovement() => AnimState = (entityTask != null && entityTask.moveDirection != Vector3.zero)? WALK : IDLE; 
+    void ManageMovement(GameLoop.WinLose state) => AnimState = (EntityTask != null && EntityTask.moveDirection != Vector3.zero && !PlayerControls.instance.Paused && state == GameLoop.WinLose.In_Game)? WALK : IDLE; 
 
     void ManageLean(){
-        lookDirection = Vector3.SmoothDamp(lookDirection, (entityTask != null)? entityTask.moveDirection : Vector3.zero, ref lookVelocity, smoothing);
+        lookDirection = Vector3.SmoothDamp(lookDirection, (EntityTask != null)? EntityTask.moveDirection : Vector3.zero, ref lookVelocity, smoothing);
 
         Vector3 localMove = transform.InverseTransformDirection(lookDirection);
         Vector3 lean = new Vector3(localMove.z * leanFactor, 0, -localMove.x * leanFactor);
@@ -80,12 +83,20 @@ public class Human : EntityCharacter, IPickup, IHarvest{
             }
         }
 
-    public override void Run(){
-        base.Run();
+    public override void OnIsSelected(SelectionCircle obj){
+        base.OnIsSelected(obj);
+
+        if(obj){ selectedNoise.PlaySound(source); }
+    }
+
+    public override void Run(GameLoop.WinLose state){
+        if(state != GameLoop.WinLose.In_Game){ return; }
+
+        base.Run(state);
         MagnetiseResources();
 
         elapsedTime -= Time.fixedDeltaTime;
-        if(entityTask == null && TargetResource && !TargetResource.MarkedForDestroy){
+        if(EntityTask == null && TargetResource && !TargetResource.MarkedForDestroy){
             SetTask(targetHarvestPos, () => Harvest(TargetResource));
         }
 
@@ -101,7 +112,7 @@ public class Human : EntityCharacter, IPickup, IHarvest{
 
     protected override void LateUpdate() {
         base.LateUpdate();
-        ManageMovement();        
+        ManageMovement(GameLoop.instance.state);        
         ManageLean();
     }    
 
@@ -116,6 +127,8 @@ public class Human : EntityCharacter, IPickup, IHarvest{
         if(heldResource != null && heldResource.resource == resource.resourceProfile){ heldResource.quantity += resource.quantity; } // If pre-existing         
         heldResource ??= new ResourceData.Resource(resource.resourceProfile, resource.quantity); // If resource doesnt exist...
 
+        physicallyHeldResource ??= Instantiate(resource.transform.GetChild(0).gameObject, transform.position + (transform.forward * resourceHoldingOffset), Quaternion.identity, transform.GetChild(0));
+        
         resource.DestroyEntity();
         return EntityERR.SUCCESS;
     }
@@ -123,6 +136,7 @@ public class Human : EntityCharacter, IPickup, IHarvest{
 
     public void RemoveEquipped(){
         heldResource = null;
+        Destroy(physicallyHeldResource);
     }
 
     /// <summary>

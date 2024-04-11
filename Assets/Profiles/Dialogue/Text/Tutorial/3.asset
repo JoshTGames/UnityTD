@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: 3
   m_EditorClassIdentifier: 
   persona: {fileID: 11400000, guid: 73757250926bc7c4a8c4a1416ebd1b67, type: 2}
-  function: {fileID: 0}
+  check: {fileID: 0}
+  preFunction: {fileID: 0}
+  postFunction: {fileID: 0}
   showArt: 0
   text: We need a new strategy desperately otherwise this fortress... Regretably,
-    our last fortress will also become dust. Do you have any ideas my majesty?
+    our last fortress will also become dust.

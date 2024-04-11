@@ -27,8 +27,8 @@ public class Orc : EntityCharacter, IAttack, IWave{
             Vector3 targetPos = entityPos + ((transform.position - entityPos).normalized * (attackRadius/2));
             targetPos.y = value.transform.position.y;
 
-            if(value == _target && entityTask != null){ 
-                entityTask.UpdatePosition(targetPos);
+            if(value == _target && EntityTask != null){ 
+                EntityTask.UpdatePosition(targetPos);
                 return; 
             }
             _target = value;
@@ -40,10 +40,10 @@ public class Orc : EntityCharacter, IAttack, IWave{
     public Orc(int ownerId) : base(ownerId){}
 
 
-    void ManageMovement() => AnimState = (entityTask != null && entityTask.moveDirection != Vector3.zero)? WALK : IDLE; 
+    void ManageMovement(GameLoop.WinLose state) => AnimState = (EntityTask != null && EntityTask.moveDirection != Vector3.zero && !PlayerControls.instance.Paused && state == GameLoop.WinLose.In_Game)? WALK : IDLE; 
 
     void ManageLean(){
-        lookDirection = Vector3.SmoothDamp(lookDirection, (entityTask != null)? entityTask.moveDirection : Vector3.zero, ref lookVelocity, smoothing);
+        lookDirection = Vector3.SmoothDamp(lookDirection, (EntityTask != null)? EntityTask.moveDirection : Vector3.zero, ref lookVelocity, smoothing);
         Vector3 localMove = transform.InverseTransformDirection(lookDirection);
         Vector3 lean = new Vector3(localMove.z * leanFactor, 0, -localMove.x * leanFactor);
 
@@ -54,7 +54,7 @@ public class Orc : EntityCharacter, IAttack, IWave{
 
     protected override void LateUpdate() {
         base.LateUpdate();
-        ManageMovement();        
+        ManageMovement(GameLoop.instance.state);        
         ManageLean();
     }
 
@@ -118,6 +118,7 @@ public class Orc : EntityCharacter, IAttack, IWave{
         elapsedTime = cooldown;
 
         entity.Damage(damage, damageInfliction, this);
+        actionNoise.PlaySound(source);
         return EntityERR.SUCCESS;
     }
 
@@ -128,12 +129,13 @@ public class Orc : EntityCharacter, IAttack, IWave{
     protected override void OnImmortalHit(){}
 
 
-    public override void Run(){        
+    public override void Run(GameLoop.WinLose state){        
+        if(state != GameLoop.WinLose.In_Game){ return; }
         elapsedTime -= Time.fixedDeltaTime;
         Target = FindEnemy();
         if(!Target){ return; }
 
-        base.Run();
+        base.Run(state);
     }
 
     protected override bool OnDrawGizmos(){

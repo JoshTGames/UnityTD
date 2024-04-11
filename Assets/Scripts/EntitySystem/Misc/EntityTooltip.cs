@@ -104,12 +104,12 @@ namespace AstralCandle.TowerDefence{
         /// Positioning
         /// </summary>
         private void LateUpdate() {
-            if(PlayerControls.instance.IsPivoting){                
+            Cursor.visible = tooltip == null && !PlayerControls.instance.IsPivoting;
+            if(PlayerControls.instance.IsPivoting || PlayerControls.instance.Paused){                
                 tooltip = null;
                 return;
             }
             
-            Cursor.visible = tooltip == null;
             if(tooltip == null){ return; }
 
             Vector2 mousePos = ClampToScreen(PlayerControls.instance.cursorPosition);

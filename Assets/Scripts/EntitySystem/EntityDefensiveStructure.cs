@@ -69,14 +69,16 @@ namespace AstralCandle.Entity{
 
             int calculatedDMG = Mathf.FloorToInt(damage * (1f / GetMaxOccupants()));
             entity.Damage(calculatedDMG, damageInfliction, this);
-            repairSettings.ResetTime();
+            repairSettings.ResetTime();            
             return EntityERR.SUCCESS;
         }
 
         public float GetCooldown() => Mathf.Clamp01(elapsedTime / cooldown);
 
-        public override void Run(){
-            base.Run();
+        public override void Run(GameLoop.WinLose state){
+            base.Run(state);
+            if(state != GameLoop.WinLose.In_Game){ return; }
+            
             if(isDead && activeProjectiles.Count <= 0 && !IsDestroyed()){ 
                 DestroyEntity();
                 return; 
@@ -121,6 +123,7 @@ namespace AstralCandle.Entity{
                 AnimationInterpolation newSettings = new AnimationInterpolation(easeInCurve, easeInDuration);
                 activeProjectiles.Add(new Projectile(projectile, startPos, e.transform, projectileHeightOffset, newSettings, () => Attack(e, true)));
             }
+            actionNoise.PlaySound(source);
         }
 
         protected override void Start(){

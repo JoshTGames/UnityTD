@@ -17,6 +17,6 @@ MonoBehaviour:
   preFunction: {fileID: 0}
   postFunction: {fileID: 0}
   showArt: 0
-  text: Here, you can see all the structures you are able to build. As of now after
-    that fight, I believe an 'Archer Tower' is in order. To show the preview, CLICK
-    on it and using your MOUSE.
+  text: Here, you can see all the structures you are able to build. After a fight
+    like that, I believe an 'Archer Tower' is in order. To show the preview, CLICK
+    on the building.

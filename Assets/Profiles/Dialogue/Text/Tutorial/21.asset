@@ -15,5 +15,6 @@ MonoBehaviour:
   persona: {fileID: 11400000, guid: 3474cfa5c2f565d4f9c5b08e216d1d4b, type: 2}
   check: {fileID: 0}
   preFunction: {fileID: 0}
+  postFunction: {fileID: 0}
   showArt: 0
-  text: Eugh. Thats no fair, well that wont be the last you see of us!
+  text: Eugh. That's no fair! Well that won't be the last you see of us!

@@ -17,5 +17,4 @@ MonoBehaviour:
   preFunction: {fileID: 0}
   postFunction: {fileID: 11400000, guid: 7ede0a44d4b74c34188b63dd94b35e6b, type: 2}
   showArt: 0
-  text: Defending from the Orcs has really dug into our reserves and we really need
-    more!
+  text: Defending from Orcs has really dug into our reserves and we really need more!

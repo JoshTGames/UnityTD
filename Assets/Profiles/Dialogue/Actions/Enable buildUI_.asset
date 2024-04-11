@@ -9,8 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e840305c736196a4f8a27ffc7afefe11, type: 3}
-  m_Name: OrcUno
+  m_Script: {fileID: 11500000, guid: c94bcfc61d1491f40903ef8d8f53601b, type: 3}
+  m_Name: Enable buildUI_
   m_EditorClassIdentifier: 
-  entities:
-  - {fileID: 6038716992477054934, guid: 7c32382c961f85540acf0d5470602f42, type: 3}
+  enableUI: 1

@@ -25,6 +25,9 @@ namespace AstralCandle.Entity{
         [ColorUsage(true, hdr:true)]
         [SerializeField] Color hitColour = Color.white, healColour = Color.green;      
         [SerializeField] DropSettings[] dropSettings; 
+        [SerializeField] float healNoiseStep = -1;
+        public GameLoop.AudioSettings idleNoise, selectedNoise, actionNoise, hurtNoise, healNoise;
+        
 
 
         /// <summary>
@@ -77,7 +80,8 @@ namespace AstralCandle.Entity{
 
 
         //--- Base functions
-        public override void Run(){
+        public override void Run(GameLoop.WinLose state){
+            if(state != GameLoop.WinLose.In_Game){ return; }
             if(isHovered){
                 EntityTooltip tooltipInstance = EntityTooltip.instance;
                 if(!tooltipInstance.contents.ContainsKey("hp")){ return; }
@@ -112,7 +116,7 @@ namespace AstralCandle.Entity{
             base.Start();
             _health = maxHealth;
             resistances = _resistances.ToHashSet();            
-            hitAnimationSettings.ResetTime(true);
+            hitAnimationSettings.ResetTime(true);            
         }
 
         protected override void LateUpdate(){
@@ -120,6 +124,13 @@ namespace AstralCandle.Entity{
             float value = hitAnimationSettings.Play();
             meshRenderer.material.SetFloat("_Opacity", value);
             meshRenderer.transform.localScale -= (Vector3.one * 0.25f) * value;
+
+            idleNoise.PlaySound(source);
+            idleNoise.ActualCooldown -= Time.deltaTime;
+
+            selectedNoise.ActualCooldown -= Time.deltaTime;
+            actionNoise.ActualCooldown -= Time.deltaTime;
+            hurtNoise.ActualCooldown -= Time.deltaTime;
         }
 
         public override void OnIsHovered(bool isHovered){
@@ -174,6 +185,8 @@ namespace AstralCandle.Entity{
             DamagePopup dmgPopup = Instantiate(damagePopupObject, startPos, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform);
             dmgPopup.SetText($"-{value}");
             dmgPopup.SetColour((OwnerId != PlayerControls.instance.ownerId)? Color.white : hitColour);
+
+            hurtNoise.PlaySound(source);
         }
         protected virtual void OnHeal(int value){ 
             meshRenderer.material.SetColor("_FlashColour", healColour);
@@ -186,8 +199,11 @@ namespace AstralCandle.Entity{
             DamagePopup dmgPopup = Instantiate(damagePopupObject, startPos, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform);
             dmgPopup.SetText($"+{value}");
             dmgPopup.SetColour(healColour);
+            healNoise.PlaySoundWithIncrease(source, GetHealth());
         }
 
+
+        
         [Serializable] public class DropSettings{
             public EntityResource resource;
             [Range(0, 1)] public float chanceToDrop;

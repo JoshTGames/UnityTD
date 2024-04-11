@@ -7,5 +7,9 @@ using UnityEngine;
 
 public class PlayParticleFXOnEvent : MonoBehaviour{
    [SerializeField] ParticleSystem pS;
-   public void Play() => pS.Play();
+   [SerializeField] AudioSource aS;
+   public void Play(){
+        pS.Play();
+        aS.Play();
+   }
 }

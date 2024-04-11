@@ -6,7 +6,6 @@ using AstralCandle.TowerDefence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AstralCandle.Animation;
 
 /*
 --- This code has has been written by Joshua Thompson (https://joshgames.co.uk) ---
@@ -37,7 +36,7 @@ public class PlayerControls : MonoBehaviour{
 
     public EntitySelection<Entity> entities;
     public int ownerId{ get => _ownerId; }   
-
+    public bool Paused{ get; private set; }
     Camera cam;
 
     /// <summary>
@@ -85,6 +84,8 @@ public class PlayerControls : MonoBehaviour{
     public Vector3 cursorPosition{
         get => _cursorPosition;
         private set{
+            if(Paused){ return; }
+
             previousCursorPosition = _cursorPosition;
             _cursorPosition = value;
             RaycastHit hit = GetWorldRay();
@@ -154,7 +155,14 @@ public class PlayerControls : MonoBehaviour{
         return occupant;
     }
 
+    public void SetPause(bool isPaused) => Paused = isPaused;
     private void LateUpdate(){
+        if(Paused){
+            BuildUI.instance.isOpen = false;
+            BuildUI.instance.Building = null;
+            return;
+        }
+
         dragSettings.UpdateDragVisual((selectStartPosition != null)? (Vector3)selectStartPosition : Vector3.zero, cursorPosition, selectStartPosition != null, !altDown);
 
         float size = CalculateOrthrographicSize();
@@ -177,22 +185,24 @@ public class PlayerControls : MonoBehaviour{
     }
 
     public void OnCursor(InputValue value) => cursorPosition = value.Get<Vector2>();
-    public void OnZoom(InputValue value) => TargetZoom = (canZoom)? Mathf.Clamp(TargetZoom + (value.Get<float>() * zoomSensitivity), 0, 1) : TargetZoom;
-    public void OnShiftSelect(InputValue value) => shiftDown = value.Get<float>() > 0;
-    public void OnAltSelect(InputValue value) => altDown = value.Get<float>() > 0;
+    public void OnZoom(InputValue value) => TargetZoom = (canZoom && !Paused)? Mathf.Clamp(TargetZoom + (value.Get<float>() * zoomSensitivity), 0, 1) : TargetZoom;
+    public void OnShiftSelect(InputValue value) => shiftDown = value.Get<float>() > 0 && !Paused;
+    public void OnAltSelect(InputValue value) => altDown = value.Get<float>() > 0 && !Paused;
     public void OnSelect(InputValue value){
-        MouseDown = (value.Get<float>() == 1)? true : false;
+        if(Paused){ return; }
+        MouseDown = value.Get<float>() == 1;
 
         BuildSystem building = buildUI.Building;
         if(building != null){
             if(building.Build()){
-                Instantiate(building.profile.Building, building.Position, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform);
+                EntityStructure eS = Instantiate(building.profile.Building, building.Position, Quaternion.identity, GameObject.Find("_GAME_RESOURCES_").transform);
+                eS.spawnSFX.PlaySound(eS.GetComponent<AudioSource>());
+                eS.GetComponentInChildren<ParticleSystem>().Play();
                 buildUI.Building = null;
                 buildUI.ToggleOpen();
             }
             return;
-        }
-        
+        }       
 
         if(buildUI.isOpen || IsPivoting){ return; }   
         switch(value.Get<float>()){
@@ -222,7 +232,9 @@ public class PlayerControls : MonoBehaviour{
                 break;
         }
     }
-    public void OnAction(InputValue value){   
+    public void OnAction(InputValue value){
+        if(Paused){ return; }  
+
         if(buildUI.Building != null){ 
             buildUI.Building = null; 
             buildUI.ToggleOpen();
@@ -272,7 +284,9 @@ public class PlayerControls : MonoBehaviour{
                     // Entering a structure
                     entity.SetTask(hoveredEntity.transform.position, () => structure.AddOccupant(entity as Entity));
                 }
-                (entity as Human).TargetResource = null;
+                Human human = entity as Human;
+                human.TargetResource = null;
+                human.actionNoise.PlaySound(human.source);
             }
         }            
         else if(rSourceNode){
@@ -292,7 +306,9 @@ public class PlayerControls : MonoBehaviour{
                 if(entity == null){ continue; }
                 
                 // Entering a structure
-                (entity as Human).TargetResource = rSourceNode;
+                Human human = entity as Human;
+                human.TargetResource = rSourceNode;
+                human.actionNoise.PlaySound(human.source);
             }
         }    
         else{ // SetTask to cursor
@@ -323,12 +339,16 @@ public class PlayerControls : MonoBehaviour{
                 // Set targetPosition in character(s)
                 Vector3 pos = new(hit.point.x, e.transform.position.y, hit.point.z);
                 entity.SetTask(pos);
-                (entity as Human).TargetResource = null;
+                Human human = entity as Human;
+                human.TargetResource = null;
+                human.actionNoise.PlaySound(human.source);
+                
             }
         }          
     }
-    public void OnPivot(InputValue value) => IsPivoting = value.Get<float>() >0;
+    public void OnPivot(InputValue value) => IsPivoting = value.Get<float>() >0 && !Paused;
     public void OnCursorVelocity(InputValue value){
+        if(Paused){ return; }
         Cursor.visible = !IsPivoting && EntityTooltip.instance.tooltip == null;
         Cursor.lockState = (IsPivoting)? CursorLockMode.Locked: CursorLockMode.None;
 
@@ -344,7 +364,7 @@ public class PlayerControls : MonoBehaviour{
     }
     
     public void OnBuild(InputValue value){
-        if(buildUI.Building != null){ return; }
+        if(buildUI.Building != null || Paused){ return; }
         buildUI.ToggleOpen();
         entities.DeselectAll();
     }
@@ -352,7 +372,11 @@ public class PlayerControls : MonoBehaviour{
     /// <summary>
     /// Attempts to skip the dialogue 
     /// </summary>
-    public void OnPassDialogue(InputValue value) => DialogueSystem.instance.CurrentDialogue?.CompleteDialogue();
+    public void OnPassDialogue(InputValue value){
+        if(Paused){ return; }
+        DialogueSystem.instance.CurrentDialogue?.CompleteDialogue();
+    }
+    public void OnPause(InputValue value) => Paused = !Paused;
     
     [Serializable] public class DragSettings{
         [SerializeField, Tooltip("The UI visual element")] Image dragUI;

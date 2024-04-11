@@ -42,6 +42,7 @@ namespace AstralCandle.Entity{
             private set;
         } = true;
 
+        public AudioSource source{ get; private set; }      
         public Entity(int ownerId) => this._ownerId = ownerId;
 
 
@@ -57,7 +58,7 @@ namespace AstralCandle.Entity{
             EntityTooltip.instance.tooltip = (isHovered)? new EntityTooltip.Tooltip(_name, _description, entityAttributeIcons): null;
         }
 
-        public void OnIsSelected(SelectionCircle obj){
+        public virtual void OnIsSelected(SelectionCircle obj){
             if(isDestroyed){ return; }
             if(obj){ 
                 if(!selectionObject){
@@ -86,6 +87,7 @@ namespace AstralCandle.Entity{
             MarkedForDestroy = false;
             isEnabled = true;
             spawnSettings.cachedScale = meshRenderer.transform.localScale;
+            source = GetComponent<AudioSource>();
         }
 
         protected virtual void LateUpdate(){
@@ -113,14 +115,14 @@ namespace AstralCandle.Entity{
         /// <summary>
         /// Called by a manager script (The main function which triggers the behaviour of this entity)
         /// </summary>
-        public abstract void Run();
+        public abstract void Run(GameLoop.WinLose state);
 
         /// <summary>
         /// Used to display editor gizmos
         /// </summary>
         /// <returns>True/False for if this function is allowed to run</returns>
         protected virtual bool OnDrawGizmos() => showDebug;
-
+        
         [System.Serializable] public sealed class Spawning{
             [SerializeField] AnimationInterpolation animationSettings;
             [HideInInspector] public Vector3 cachedScale;
@@ -136,5 +138,5 @@ namespace AstralCandle.Entity{
                 return Vector3.LerpUnclamped(Vector3.zero, cachedScale, value);
             }
         }
-    }
+    }    
 }

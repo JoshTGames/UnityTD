@@ -105,7 +105,8 @@ public class DialogueSystem : MonoBehaviour{
         shiftingSettings.ResetTime();
     }
     private void LateUpdate(){
-        settings.DoShow(ui, CurrentDialogue != null);
+        settings.DoShow(ui, CurrentDialogue != null && !PlayerControls.instance.Paused);
+        if(PlayerControls.instance.Paused){ return; }
         PlayDialogue();
 
         float value = shiftingSettings.Play(!BuildUI.instance.isOpen);

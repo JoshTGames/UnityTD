@@ -15,6 +15,7 @@ MonoBehaviour:
   persona: {fileID: 11400000, guid: 73757250926bc7c4a8c4a1416ebd1b67, type: 2}
   check: {fileID: 11400000, guid: e2a1ca77ed8482347b29bb5a3edaaabf, type: 2}
   preFunction: {fileID: 0}
+  postFunction: {fileID: 0}
   showArt: 0
   text: To get started, try panning around your fortress. To do this, hold down the
     MIDDLE MOUSE button and move your mouse!
